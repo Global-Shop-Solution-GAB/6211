@@ -1,0 +1,453 @@
+Program.Sub.ScreenSU.Start
+Gui.FormTypePrice..Create
+Gui.FormTypePrice..Caption("Order Type Price Maintenance")
+Gui.FormTypePrice..Size(17760,10695)
+Gui.FormTypePrice..MinX(0)
+Gui.FormTypePrice..MinY(0)
+Gui.FormTypePrice..Position(0,0)
+Gui.FormTypePrice..BackColor(-2147483633)
+Gui.FormTypePrice..MousePointer(0)
+Gui.FormTypePrice..Event(UnLoad,FormTypePrice_UnLoad)
+Gui.FormTypePrice.lblPart.Create(Label,"Part",True,1935,255,0,105,195,True,0,"Arial",8,-2147483633,0)
+Gui.FormTypePrice.txtPart.Create(TextBox,"",True,3225,300,0,105,480,True,0,"Arial",8,-2147483643,1)
+Gui.FormTypePrice.txtPart.MaxLength(30)
+Gui.FormTypePrice.txtPart.Mask(">")
+Gui.FormTypePrice.txtPart.Event(GotFocus,txtPart_GotFocus)
+Gui.FormTypePrice.cmdRefresh.Create(Button)
+Gui.FormTypePrice.cmdRefresh.Size(855,375)
+Gui.FormTypePrice.cmdRefresh.Position(3975,450)
+Gui.FormTypePrice.cmdRefresh.Caption("REFRESH")
+Gui.FormTypePrice.cmdRefresh.Event(Click,cmdRefresh_Click)
+Gui.FormTypePrice.GsGridPrice.Create(GsGridControl)
+Gui.FormTypePrice.GsGridPrice.Size(17385,8850)
+Gui.FormTypePrice.GsGridPrice.Position(105,885)
+Gui.FormTypePrice.GsGridPrice.Anchor(15)
+Gui.FormTypePrice.cmdSave.Create(Button)
+Gui.FormTypePrice.cmdSave.Size(855,375)
+Gui.FormTypePrice.cmdSave.Position(105,9810)
+Gui.FormTypePrice.cmdSave.Anchor(6)
+Gui.FormTypePrice.cmdSave.Caption("Save")
+Gui.FormTypePrice.cmdSave.Event(Click,cmdSave_Click)
+Gui.FormTypePrice.cmdPart.Create(Button)
+Gui.FormTypePrice.cmdPart.Size(465,375)
+Gui.FormTypePrice.cmdPart.Position(3420,450)
+Gui.FormTypePrice.cmdPart.Caption("^")
+Gui.FormTypePrice.cmdPart.Event(Click,cmdPart_Click)
+Gui.FormTypePrice.lbl1.Create(Label,"Order Type",True,1935,255,0,5655,195,True,0,"Arial",8,-2147483633,0)
+Gui.FormTypePrice.txtOrderType.Create(TextBox,"",True,3480,300,0,5655,480,True,0,"Arial",8,-2147483643,1)
+Gui.FormTypePrice.txtOrderType.MaxLength(30)
+Gui.FormTypePrice.txtOrderType.Event(GotFocus,txtOrderType_GotFocus)
+Gui.FormTypePrice.cmdAddOrd.Create(Button)
+Gui.FormTypePrice.cmdAddOrd.Size(1785,375)
+Gui.FormTypePrice.cmdAddOrd.Position(9240,450)
+Gui.FormTypePrice.cmdAddOrd.Caption("Add OrderType")
+Gui.FormTypePrice.cmdAddOrd.Event(Click,cmdAddOrd_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(Build_Empty_DT)
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+Gui.FormTypePrice..Show
+
+Gui.FormTypePrice..AlwaysOnTop(True)
+Gui.FormTypePrice..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Type_Price.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormTypePrice_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.FormTypePrice_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormTypePrice_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.ODBC.Con.State,=,1)
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormTypePrice_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormTypePrice_UnLoad.End
+
+Program.Sub.cmdRefresh_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdRefresh_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+
+F.Intrinsic.UI.InvokeWaitDialog("Getting Part Price Data................")
+gui.FormTypePrice.txtPart.Enabled(False)
+Gui.FormTypePrice.GsGridPrice.Enabled(False)
+Gui.FormTypePrice.cmdRefresh.Enabled(False)
+
+F.Intrinsic.String.Build("Select Distinct A.Part, OrderType, B.Description, Construction, ItemCategory, PlatesPerPack, SinglePrice, PairPrice, TrioPrice, PackPerBox, BoxesPerPallet, CenteringCode, MaxCharacters, Allow_Half_Spaces, PlateImage, Active From V_Inventory_Mstr A Left Join GCG_6211_Type_Price B on A.Part = B.Part Where A.Part = '{0}' Order by A.Part",V.Screen.FormTypePrice!txtPart.Text,V.Local.sSql)
+F.ODBC.Connection!Con.OpenCompanyConnection
+F.Data.DataTable.CreateFromSQL("Temp","con",V.Local.sSql,True)
+	
+F.Data.DataTable.DeleteRow("TypePrice")
+F.Data.DataTable.AcceptChanges("TypePrice")
+F.Data.DataTable.Merge("Temp","TypePrice",False,2)
+F.Data.DataTable.Close("Temp")
+F.ODBC.Connection!Con.Close
+gui.FormTypePrice.txtPart.Enabled(True)
+Gui.FormTypePrice.GsGridPrice.Enabled(True)
+Gui.FormTypePrice.cmdRefresh.Enabled(True)
+F.Intrinsic.UI.CloseWaitDialog
+
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdRefresh_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Type_Price.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormTypePrice_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdRefresh_Click.End
+
+Program.Sub.Build_Empty_DT.Start
+F.Intrinsic.Control.SetErrorHandler("Build_Empty_DT_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.DataTable.CreateFromSQL("TypePrice","con","Select Part, OrderType, Description, Construction, ItemCategory, PlatesPerPack, SinglePrice, PairPrice, TrioPrice, PackPerBox, BoxesPerPallet, CenteringCode, MaxCharacters, Allow_Half_Spaces, PlateImage, Active From GCG_6211_Type_Price Where Part = '-zzzzzzzzzzzzzzzzzZ'",True)
+
+F.Data.DataTable.AddColumn("TypePrice","Delete_Row",String)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Build_Empty_DT_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Type_Price.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormTypePrice_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Build_Empty_DT.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormTypePrice.GsGridPrice.AddGridviewFromDatatable("GTypePrice","TypePrice")
+
+Gui.FormTypePrice.GsGridPrice.SetGridViewProperty("GTypePrice","MultiSelect",False)
+Gui.FormTypePrice.GsGridPrice.SetGridViewProperty("GTypePrice","AllowSort",True)
+Gui.FormTypePrice.GsGridPrice.SetGridViewProperty("GTypePrice","AllowFilter",True)
+Gui.FormTypePrice.GsGridPrice.SetGridViewProperty("GTypePrice","OptionsDetailShowDetailTabs",False)
+Gui.FormTypePrice.GsGridPrice.SetGridViewProperty("GTypePrice","OptionsFindAlwaysVisible",True)
+Gui.FormTypePrice.GsGridPrice.SetGridviewProperty("GTypePrice","OptionsViewShowAutoFilterRow",True)
+Gui.FormTypePrice.GsGridPrice.SetGridViewProperty("GTypePrice","AllowColumnMoving",False)
+Gui.FormTypePrice.GsGridPrice.SetGridviewProperty("GTypePrice","OptionsSelectionEnableAppearanceFocusedRow",False)
+Gui.FormTypePrice.GsGridPrice.SetGridviewProperty("GTypePrice","OptionsViewColumnAutoWidth",False)
+
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Part","Visible",False)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Description","Visible",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Construction","Visible",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","OrderType","Visible",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","ItemCategory","Visible",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PlatesPerPack","Visible",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","SinglePrice","Visible",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PairPrice","Visible",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","TrioPrice","Visible",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PackPerBox","Visible",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","BoxesPerPallet","Visible",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","CenteringCode","Visible",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","MaxCharacters","Visible",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Allow_Half_Spaces","Visible",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PlateImage","Visible",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Active","Visible",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Delete_Row","Visible",True)
+
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Delete_Row","Caption"," ")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Delete_Row","Fixed","Right")
+Gui.FormTypePrice.GsGridPrice.ColumnEdit("GTypePrice","Delete_Row","EditorButton","Delete Row")
+
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Part","AllowEdit",False)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Description","AllowEdit",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Construction","AllowEdit",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","OrderType","AllowEdit",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","ItemCategory","AllowEdit",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PlatesPerPack","AllowEdit",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","SinglePrice","AllowEdit",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PairPrice","AllowEdit",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","TrioPrice","AllowEdit",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PackPerBox","AllowEdit",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","BoxesPerPallet","AllowEdit",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","CenteringCode","AllowEdit",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","MaxCharacters","AllowEdit",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Allow_Half_Spaces","AllowEdit",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PlateImage","AllowEdit",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Active","AllowEdit",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Delete_Row","AllowEdit",False)
+
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Part","ReadOnly",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Description","ReadOnly",False)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Construction","ReadOnly",False)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","OrderType","ReadOnly",False)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","ItemCategory","ReadOnly",False)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PlatesPerPack","ReadOnly",False)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","SinglePrice","ReadOnly",False)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PairPrice","ReadOnly",False)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","TrioPrice","ReadOnly",False)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PackPerBox","ReadOnly",False)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","BoxesPerPallet","ReadOnly",False)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","CenteringCode","ReadOnly",False)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","MaxCharacters","ReadOnly",False)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Allow_Half_Spaces","ReadOnly",False)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PlateImage","ReadOnly",False)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Active","ReadOnly",False)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Delete_Row","ReadOnly",True)
+
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Part","Width","100")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Description","Width","250")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Construction","Width","250")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","OrderType","Width","150")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","ItemCategory","Width","150")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PlatesPerPack","Width","100")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","SinglePrice","Width","100")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PairPrice","Width","100")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","TrioPrice","Width","100")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PackPerBox","Width","100")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","BoxesPerPallet","Width","100")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","CenteringCode","Width","100")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","MaxCharacters","Width","100")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Allow_Half_Spaces","Width","150")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PlateImage","Width","100")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Active","Width","100")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Delete_Row","MaxWidth","75")
+
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Part","MaxLength","20")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Description","MaxLength","30")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Construction","MaxLength","30")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","OrderType","MaxLength","30")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","ItemCategory","MaxLength","30")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","CenteringCode","MaxLength","1")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Allow_Half_Spaces","MaxLength","1")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PlateImage","MaxLength","50")
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Active","MaxLength","1")
+
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Part","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Description","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Construction","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","OrderType","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","ItemCategory","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PlatesPerPack","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","SinglePrice","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PairPrice","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","TrioPrice","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PackPerBox","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","BoxesPerPallet","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","CenteringCode","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","MaxCharacters","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Allow_Half_Spaces","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PlateImage","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Active","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Delete_Row","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Part","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Description","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Construction","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","OrderType","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","ItemCategory","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PlatesPerPack","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","SinglePrice","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PairPrice","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","TrioPrice","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PackPerBox","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","BoxesPerPallet","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","CenteringCode","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","MaxCharacters","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Allow_Half_Spaces","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PlateImage","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Active","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Delete_Row","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Part","HeaderFontBold",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Description","HeaderFontBold",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Construction","HeaderFontBold",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","OrderType","HeaderFontBold",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","ItemCategory","HeaderFontBold",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PlatesPerPack","HeaderFontBold",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","SinglePrice","HeaderFontBold",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PairPrice","HeaderFontBold",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","TrioPrice","HeaderFontBold",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PackPerBox","HeaderFontBold",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","BoxesPerPallet","HeaderFontBold",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","CenteringCode","HeaderFontBold",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","MaxCharacters","HeaderFontBold",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Allow_Half_Spaces","HeaderFontBold",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","PlateImage","HeaderFontBold",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Active","HeaderFontBold",True)
+Gui.FormTypePrice.GsGridPrice.SetColumnProperty("GTypePrice","Delete_Row","HeaderFontBold",True)
+
+Gui.FormTypePrice.GsGridPrice.MainView("GTypePrice")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Type_Price.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormTypePrice_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.cmdSave_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdSave_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+
+F.Intrinsic.UI.InvokeWaitDialog("Saveing Price Data.....")
+
+Gui.FormTypePrice.cmdSave.Enabled(False)
+
+F.Intrinsic.String.Build("Delete From GCG_6211_Type_Price Where Part = '{0}'",V.DataTable.TypePrice(V.DataTable.TypePrice.RowCount--).Part!FieldValTrim,V.Local.sSql)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.ODBC.Connection!Con.Execute(V.Local.sSql)
+
+F.Data.DataTable.SaveToDB("TypePrice","con","GCG_6211_Type_Price","",128,"Part@!@Part*!*OrderType@!@OrderType*!*Description@!@Description*!*Construction@!@Construction*!*ItemCategory@!@ItemCategory*!*PlatesPerPack@!@PlatesPerPack*!*SinglePrice@!@SinglePrice*!*PairPrice@!@PairPrice*!*TrioPrice@!@TrioPrice*!*PackPerBox@!@PackPerBox*!*BoxesPerPallet@!@BoxesPerPallet*!*CenteringCode@!@CenteringCode*!*MaxCharacters@!@MaxCharacters*!*Allow_Half_Spaces@!@Allow_Half_Spaces*!*PlateImage@!@PlateImage*!*Active@!@Active")
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.UI.CloseWaitDialog
+
+F.Intrinsic.UI.Msgbox("Price Data Saved")
+
+Gui.FormTypePrice.cmdSave.Enabled(True)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdSave_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Type_Price.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormTypePrice_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.cmdPart_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdPart_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+
+F.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+
+F.Intrinsic.UI.Browser(105,"",V.Local.sRet)
+
+F.Intrinsic.Control.If(V.Local.sRet,<>,"***CANCEL***")
+	F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+	Gui.FormTypePrice.txtPart.Text(V.Local.sRet.Trim)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdPart_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Type_Price.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormTypePrice_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdPart_Click.End
+
+Program.Sub.cmdAddOrd_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdAddOrd_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sFilter.Declare(String,"")
+
+F.Intrinsic.String.Build("OrderType = '{0}'",V.Screen.FormTypePrice!txtOrderType.Text,V.Local.sFilter)
+
+F.Data.DataView.Create("TypePrice","Temp",22,V.Local.sFilter,"")
+
+F.Intrinsic.Control.If(V.DataView.TypePrice!Temp.RowCount--,<>,-1)
+	F.Intrinsic.UI.Msgbox("Order Type already exists.","Attentino")
+	Gui.FormTypePrice.txtOrderType.Text("")
+F.Intrinsic.Control.Else
+	F.Data.DataTable.AddRow("TypePrice","Part",V.Screen.FormTypePrice!txtPart.Text,"OrderType",V.Screen.FormTypePrice!txtOrderType.Text)
+	Gui.FormTypePrice.txtOrderType.Text("")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.Close("TypePrice","Temp")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdAddOrd_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Type_Price.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormTypePrice_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdAddOrd_Click.End
+
+Program.Sub.txtPart_GotFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtPart_GotFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+gui.FormTypePrice.txtPart.SelectAll
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtPart_GotFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Type_Price.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormTypePrice_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtPart_GotFocus.End
+
+Program.Sub.txtOrderType_GotFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtOrderType_GotFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+gui.FormTypePrice.txtOrderType.SelectAll
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtOrderType_GotFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Type_Price.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormTypePrice_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtOrderType_GotFocus.End
