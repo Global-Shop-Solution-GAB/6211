@@ -1,0 +1,112 @@
+﻿Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+Function.Intrinsic.UI.UsePixels ' Allows you to use Pixels instead of Twips throughout
+
+f.Intrinsic.Control.Try
+v.Local.ssql.Declare
+v.local.sOrderno.declare
+v.local.sLineno.declare
+v.Local.sRet.Declare
+V.Local.sSerial.Declare
+
+'Macon Resources - License Plate Serialization
+'Devloper Ranjit
+
+f.Intrinsic.Control.If(v.Caller.Hook,=,16630)
+'Populate WO Hook
+	f.Intrinsic.Control.If(v.passed.ORDER-NO.Length,>,6)
+	f.Intrinsic.Control.andIf(v.passed.ORDER-NO,<>,"0000000")
+		'Assign Orderno & lineno to globalvariable
+		'from Salesorderscreen
+		f.Intrinsic.String.Build("{0}{1}",v.passed.ORDER-NO,v.passed.ORDER-LINE,Variable.Passed.GLOBAL)
+	f.Intrinsic.Control.endif
+f.Intrinsic.Control.elseIf(v.Caller.Hook,=,31825)
+'Serialize Populate Hook
+	f.Intrinsic.Control.If(Variable.Passed.GLOBAL.Length,<>,11)
+	'not from Salesorderscreen
+		f.Intrinsic.Control.End
+	f.Intrinsic.Control.EndIf
+
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	
+	'query to see if the company option to attach manual serial numbers is turned on, if it is not, end the program.
+	F.Intrinsic.String.Build("select F_BOOLEAN from V_OP_HEADER where ID = '{0}'","401137",v.Local.sSql)
+	F.ODBC.Connection!Con.ExecuteAndReturn(v.Local.sSql,v.Local.sRet)
+	F.Intrinsic.Control.If(v.Local.sRet.Trim,=,"0")
+		F.Intrinsic.UI.Msgbox("The company option to allow manual serial numbers is not activated.")
+		Variable.Passed.GLOBAL.Set("")
+		F.Intrinsic.Control.CallSub(unload)
+	f.Intrinsic.Control.EndIf	
+
+'	f.Intrinsic.String.LPad(Variable.Passed.009000,"0",7,v.local.sOrderno)
+'	f.Intrinsic.String.RPad(Variable.Passed.009001,"0",4,v.local.sLineno)
+	f.Intrinsic.String.Build("select Serial from GCG_6211_Serial_Data where order_no + Record_no  = '{0}'",Variable.Passed.GLOBAL,v.Local.ssql)
+	
+	f.Data.Datatable.CreateFromSQL("DTSerial","con",v.Local.ssql)
+	
+	
+	f.Intrinsic.Control.If(v.DataTable.DTSerial.RowCount,>,0)
+		'update JOB Suffix to custom table
+		F.Intrinsic.String.Build("update GCG_6211_Serial_Data set JOB = '{0}', SUFFIX = '{1}' where order_no + Record_no  = '{2}'",Variable.Passed.009000,Variable.Passed.009001,Variable.Passed.GLOBAL,v.Local.ssql)
+		F.ODBC.Connection!Con.Execute(v.Local.sSql)
+	
+		f.Data.DataView.Create("DTSerial","DVSerial",22,"","")
+		Function.Intrinsic.BDF.Load("AUX001","AUX001")
+		
+		Function.Data.DataView.ToString("DTSerial","DVSerial","Serial","*!*",v.Ambient.NewLine,V.Local.sSerial)	
+		
+		Function.Intrinsic.BDF.WriteRow("AUX001",V.Local.sSerial)
+	
+		F.Intrinsic.UI.ChangeCallerProperty(v.Passed.000082,"LOCK","1")
+		F.Intrinsic.UI.ChangeCallerProperty(v.Passed.000022,"LOCK","1")
+		F.Intrinsic.UI.ChangeCallerProperty(v.Passed.000023,"LOCK","1")
+		F.Intrinsic.UI.ChangeCallerProperty(v.Passed.000024,"LOCK","1")
+		F.Intrinsic.UI.ChangeCallerProperty(v.Passed.000025,"LOCK","1") 
+		F.Intrinsic.UI.ChangeCallerProperty(v.Passed.AUX001,"LOCK","1") 
+		F.Intrinsic.UI.ChangeCallerProperty(v.Passed.000030,"LOCK","1") 
+				
+		Function.Intrinsic.BDF.Save("AUX001","AUX001")
+	
+		f.Data.DataView.Close("DTSerial","DVSerial")
+	f.Intrinsic.Control.EndIf
+	
+	f.Data.DataTable.Close("DTSerial")
+	Variable.Passed.GLOBAL.Set("")
+	F.Intrinsic.Control.CallSub(unload)
+f.Intrinsic.Control.EndIf
+
+
+
+f.Intrinsic.Control.Catch
+f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+
+
+Program.Sub.ErrorMsg.Start
+v.Local.sError.Declare
+
+f.Intrinsic.String.Build("Project GCG_6211_LoadSerial.g2u {0}{0}Subroutine: {1}{0}Error: {2} with Description: {3}", v.Ambient.NewLine, v.Args.CurrentSub, v.Ambient.ErrorNumber, v.Ambient.ErrorDescription, v.Local.sError)
+f.Intrinsic.UI.Msgbox(v.Local.sError)
+	
+
+Program.Sub.ErrorMsg.End
+
+Program.Sub.unload.Start
+f.Intrinsic.Control.Try
+
+F.ODBC.Connection!Con.Close
+f.Intrinsic.Control.End
+
+f.Intrinsic.Control.Catch
+f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.unload.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$rnair$}$20201216115834793$}$JUGEdtlNdgRUPvge2DQ26QlJ++3xMCFeZpJVB9x2+0vhpwsbukqiYbN6TYVU03sdFbAJHGSv/NI=
+Program.Sub.Comments.End
