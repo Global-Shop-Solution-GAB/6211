@@ -1,0 +1,438 @@
+Program.Sub.ScreenSU.Start
+Gui.FormFTP..Create
+Gui.FormFTP..Size(7155,4590)
+Gui.FormFTP..Position(0,0)
+Gui.FormFTP..BackColor(-2147483633)
+Gui.FormFTP..MousePointer(0)
+Gui.FormFTP..Caption("FTP Credentials Maintenance")
+Gui.FormFTP..Event(UnLoad,FormFTP_UnLoad)
+Gui.FormFTP..MinX(0)
+Gui.FormFTP..MinY(0)
+Gui.FormFTP.frmSFTP.Create(Frame)
+Gui.FormFTP.frmSFTP.Size(5130,3915)
+Gui.FormFTP.frmSFTP.Position(75,105)
+Gui.FormFTP.frmSFTP.Caption("SFTP Settings")
+Gui.FormFTP.lblRemoteHost.Create(Label,"Remote Host:",True,1110,255,0,645,360,True,1,"Arial",8,-2147483633,0)
+Gui.FormFTP.lblRemoteHost.Parent("frmSFTP")
+Gui.FormFTP.lblUser.Create(Label,"User:",True,1110,255,0,645,720,True,1,"Arial",8,-2147483633,0)
+Gui.FormFTP.lblUser.Parent("frmSFTP")
+Gui.FormFTP.lblPW.Create(Label,"Password:",True,1110,255,0,645,1065,True,1,"Arial",8,-2147483633,0)
+Gui.FormFTP.lblPW.Parent("frmSFTP")
+Gui.FormFTP.lblPort.Create(Label,"Remote Port:",True,1110,255,0,645,1440,True,1,"Arial",8,-2147483633,0)
+Gui.FormFTP.lblPort.Parent("frmSFTP")
+Gui.FormFTP.lblPath.Create(Label,"Remote Pickup Path:",True,1590,255,0,165,1800,True,1,"Arial",8,-2147483633,0)
+Gui.FormFTP.lblPath.Parent("frmSFTP")
+Gui.FormFTP.txtRemoteHost.Create(TextBox,"",True,3195,300,0,1800,270,True,0,"Arial",8,-2147483643,1)
+Gui.FormFTP.txtRemoteHost.Parent("frmSFTP")
+Gui.FormFTP.txtRemoteHost.Event(GotFocus,txtRemoteHost_GotFocus)
+Gui.FormFTP.txtUser.Create(TextBox,"",True,3195,300,0,1800,630,True,0,"Arial",8,-2147483643,1)
+Gui.FormFTP.txtUser.Parent("frmSFTP")
+Gui.FormFTP.txtUser.Event(GotFocus,txtUser_GotFocus)
+Gui.FormFTP.txtPassword.Create(TextBox,"",True,3195,300,0,1800,990,True,0,"Arial",8,-2147483643,1)
+Gui.FormFTP.txtPassword.Parent("frmSFTP")
+Gui.FormFTP.txtPassword.Event(GotFocus,txtPassword_GotFocus)
+Gui.FormFTP.txtRemotePort.Create(TextBox,"",True,3195,300,0,1800,1350,True,0,"Arial",8,-2147483643,1)
+Gui.FormFTP.txtRemotePort.Parent("frmSFTP")
+Gui.FormFTP.txtRemotePort.Event(GotFocus,txtRemotePort_GotFocus)
+Gui.FormFTP.txtPickupPath.Create(TextBox,"",True,3195,300,0,1800,1710,True,0,"Arial",8,-2147483643,1)
+Gui.FormFTP.txtPickupPath.Parent("frmSFTP")
+Gui.FormFTP.txtPickupPath.Event(GotFocus,txtRemotePath_GotFocus)
+Gui.FormFTP.lblProc.Create(Label,"Processed File Location",True,2955,255,0,105,2625,True,0,"Arial",8,-2147483633,0)
+Gui.FormFTP.lblProc.Parent("frmSFTP")
+Gui.FormFTP.txtProcPath.Create(TextBox,"",True,4890,300,0,105,2835,True,0,"Arial",8,-2147483643,1)
+Gui.FormFTP.txtProcPath.Parent("frmSFTP")
+Gui.FormFTP.txtProcPath.Event(GotFocus,txtWeekFile_GotFocus)
+Gui.FormFTP.lblErrPath.Create(Label,"Error File Location",True,3000,255,0,105,3315,True,0,"Arial",8,-2147483633,0)
+Gui.FormFTP.lblErrPath.Parent("frmSFTP")
+Gui.FormFTP.txtErrorPath.Create(TextBox,"",True,4890,300,0,105,3540,True,0,"Arial",8,-2147483643,1)
+Gui.FormFTP.txtErrorPath.Parent("frmSFTP")
+Gui.FormFTP.txtErrorPath.Event(GotFocus,txtMonthAcc_GotFocus)
+Gui.FormFTP.lblDrop.Create(Label,"Remote Dropoff Path:",True,1710,255,0,45,2175,True,1,"Arial",8,-2147483633,0)
+Gui.FormFTP.lblDrop.Parent("frmSFTP")
+Gui.FormFTP.txtDropPath.Create(TextBox,"",True,3195,300,0,1800,2085,True,0,"Arial",8,-2147483643,1)
+Gui.FormFTP.txtDropPath.Parent("frmSFTP")
+Gui.FormFTP.cmdSaveSettings.Create(Button)
+Gui.FormFTP.cmdSaveSettings.Size(1665,375)
+Gui.FormFTP.cmdSaveSettings.Position(5265,3645)
+Gui.FormFTP.cmdSaveSettings.Anchor(9)
+Gui.FormFTP.cmdSaveSettings.Caption("Save Settings")
+Gui.FormFTP.cmdSaveSettings.Event(Click,cmdSaveSettings_Click)
+Gui.FormFTP.cmdTestCon.Create(Button)
+Gui.FormFTP.cmdTestCon.Size(1665,375)
+Gui.FormFTP.cmdTestCon.Position(5265,915)
+Gui.FormFTP.cmdTestCon.Anchor(9)
+Gui.FormFTP.cmdTestCon.Caption("Test Connection")
+Gui.FormFTP.cmdTestCon.Event(Click,cmdTestCon_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+
+	F.Intrinsic.Control.CallSub(Load_Settings)
+	
+	Gui.FormFTP..Show
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_6211_Cred_Maint.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(FormFTP_UnLoad)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.cmdSaveSettings_Click.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+	v.Local.sTemp.Declare(String,"")
+	v.Local.sRemoteHost.Declare(String,"")
+	v.Local.sRemoteUser.Declare(String,"")
+	v.Local.sRemotePassword.Declare(String,"")
+	v.Local.sRemotePort.Declare(String,"")
+	v.Local.sPickup.Declare(String,"")
+	v.Local.sDrop.Declare(String,"")
+	v.Local.sSQL.Declare(String,"")
+	V.Local.sProc.Declare(String,"")
+	V.Local.sErrPath.Declare(String,"")
+	V.Local.baValue.Declare(ByteArray)
+	V.Local.iSize.Declare(Long,0)
+	
+	v.Local.sTemp.Set(V.Screen.FormFTP!txtRemoteHost.Text)
+	F.Intrinsic.Math.Add(V.Local.sTemp.Length,1,V.Local.iSize)
+	F.Intrinsic.String.RPad(V.Local.sTemp.Trim," ",V.Local.iSize,V.Local.sTemp)
+	F.Global.Encryption.Encrypt(V.Local.sTemp,V.Local.baValue)
+	F.Intrinsic.String.ConvertBA2String(V.Local.baValue,V.Local.sTemp)
+	V.Local.sRemoteHost.Set(V.Local.sTemp)
+	
+	v.Local.sTemp.Set(V.Screen.FormFTP!txtUser.Text)
+	F.Intrinsic.Math.Add(V.Local.sTemp.Length,1,V.Local.iSize)
+	F.Intrinsic.String.RPad(V.Local.sTemp.Trim," ",V.Local.iSize,V.Local.sTemp)
+	F.Global.Encryption.Encrypt(V.Local.sTemp,V.Local.baValue)
+	F.Intrinsic.String.ConvertBA2String(V.Local.baValue,V.Local.sTemp)
+	V.Local.sRemoteUser.Set(V.Local.sTemp)
+	
+	v.Local.sTemp.Set(V.Screen.FormFTP!txtPassword.Text)
+	F.Intrinsic.Math.Add(V.Local.sTemp.Length,1,V.Local.iSize)
+	F.Intrinsic.String.RPad(V.Local.sTemp.Trim," ",V.Local.iSize,V.Local.sTemp)
+	F.Global.Encryption.Encrypt(V.Local.sTemp,V.Local.baValue)
+	F.Intrinsic.String.ConvertBA2String(V.Local.baValue,V.Local.sTemp)
+	V.Local.sRemotePassword.Set(V.Local.sTemp)
+	
+	v.Local.sTemp.Set(V.Screen.FormFTP!txtRemotePort.Text)
+	F.Intrinsic.Math.Add(V.Local.sTemp.Length,1,V.Local.iSize)
+	F.Intrinsic.String.RPad(V.Local.sTemp.Trim," ",V.Local.iSize,V.Local.sTemp)
+	F.Global.Encryption.Encrypt(V.Local.sTemp,V.Local.baValue)
+	F.Intrinsic.String.ConvertBA2String(V.Local.baValue,V.Local.sTemp)
+	V.Local.sRemotePort.Set(V.Local.sTemp)
+	
+	v.Local.sTemp.Set(V.Screen.FormFTP!txtPickupPath.Text)
+	F.Intrinsic.Math.Add(V.Local.sTemp.Length,1,V.Local.iSize)
+	F.Intrinsic.String.RPad(V.Local.sTemp.Trim," ",V.Local.iSize,V.Local.sTemp)
+	F.Global.Encryption.Encrypt(V.Local.sTemp,V.Local.baValue)
+	F.Intrinsic.String.ConvertBA2String(V.Local.baValue,V.Local.sTemp)
+	V.Local.sPickup.Set(V.Local.sTemp)
+	
+	v.Local.sTemp.Set(V.Screen.FormFTP!txtDropPath.Text)
+	F.Intrinsic.Math.Add(V.Local.sTemp.Length,1,V.Local.iSize)
+	F.Intrinsic.String.RPad(V.Local.sTemp.Trim," ",V.Local.iSize,V.Local.sTemp)
+	F.Global.Encryption.Encrypt(V.Local.sTemp,V.Local.baValue)
+	F.Intrinsic.String.ConvertBA2String(V.Local.baValue,V.Local.sTemp)
+	V.Local.sDrop.Set(V.Local.sTemp)
+	
+	v.Local.sTemp.Set(V.Screen.FormFTP!txtErrorPath.Text)
+	F.Intrinsic.Math.Add(V.Local.sTemp.Length,1,V.Local.iSize)
+	F.Intrinsic.String.RPad(V.Local.sTemp.Trim," ",V.Local.iSize,V.Local.sTemp)
+	F.Global.Encryption.Encrypt(V.Local.sTemp,V.Local.baValue)
+	F.Intrinsic.String.ConvertBA2String(V.Local.baValue,V.Local.sTemp)
+	V.Local.sErrPath.Set(V.Local.sTemp)
+	
+	v.Local.sTemp.Set(V.Screen.FormFTP!txtProcPath.Text)
+	F.Intrinsic.Math.Add(V.Local.sTemp.Length,1,V.Local.iSize)
+	F.Intrinsic.String.RPad(V.Local.sTemp.Trim," ",V.Local.iSize,V.Local.sTemp)
+	F.Global.Encryption.Encrypt(V.Local.sTemp,V.Local.baValue)
+	F.Intrinsic.String.ConvertBA2String(V.Local.baValue,V.Local.sTemp)
+	V.Local.sProc.Set(V.Local.sTemp)
+	
+	f.ODBC.Connection!con.OpenCompanyConnection
+	f.Data.DataTable.CreateFromSQL("sftpSettingsDT", "con", "Select * from GCG_6211_Settings")
+		
+	f.Intrinsic.Control.If(v.DataTable.sftpSettingsDT.RowCount, =, 0)
+		f.Intrinsic.String.Build("Insert into  GCG_6211_Settings (RemoteHost, RemoteUser, RemotePassword, RemotePort, Pickup_Path, Dropoff_Path, Proc_Path, Error_Path) Values ('{0}', '{1}', '{2}', '{3}', '{4}','{5}','{6}','{7}')", v.Local.sRemoteHost, v.Local.sRemoteUser, v.Local.sRemotePassword, v.Local.sRemotePort,V.Local.sPickup,V.Local.sDrop,V.Local.sProc,V.Local.sErrPath, v.Local.sSQL)
+		f.ODBC.Connection!con.Execute(v.Local.sSQL)
+	f.Intrinsic.Control.ElseIf(v.DataTable.sftpSettingsDT.RowCount, >, 0)
+		f.ODBC.Connection!con.Execute("Delete from GCG_6211_Settings")
+		f.Intrinsic.String.Build("Insert into  GCG_6211_Settings (RemoteHost, RemoteUser, RemotePassword, RemotePort, Pickup_Path, Dropoff_Path, Proc_Path, Error_Path) Values ('{0}', '{1}', '{2}', '{3}', '{4}','{5}','{6}','{7}')", v.Local.sRemoteHost, v.Local.sRemoteUser, v.Local.sRemotePassword, v.Local.sRemotePort,V.Local.sPickup,V.Local.sDrop,V.Local.sProc,V.Local.sErrPath, v.Local.sSQL)
+		f.ODBC.Connection!con.Execute(v.Local.sSQL)
+	f.Intrinsic.Control.EndIf
+	
+	F.Data.DataTable.Close("sftpSettingsDT")
+	
+	f.ODBC.Connection!con.Close
+	
+	f.Intrinsic.UI.Msgbox("Save Complete")
+
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_6211_Cred_Maint.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(FormFTP_UnLoad)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.cmdSaveSettings_Click.End
+
+Program.Sub.FormFTP_UnLoad.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+
+	F.Intrinsic.Control.End
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_6211_Cred_Maint.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.FormFTP_UnLoad.End
+
+Program.Sub.cmdTestCon_Click.Start
+f.Intrinsic.Control.Try
+	v.Local.sRemoteHost.Declare(String,"")
+	v.Local.sRemoteUser.Declare(String,"")
+	v.Local.sRemotePassword.Declare(String,"")
+	v.Local.sRemotePort.Declare(String,"")
+	v.Local.sRemotePath.Declare(String,"")
+	v.Local.sSQL.Declare(String,"")
+	
+	v.Local.sRemoteHost.Set(V.Screen.FormFTP!txtRemoteHost.Text)
+
+	v.Local.sRemoteUser.Set(V.Screen.FormFTP!txtUser.Text)
+	
+	v.Local.sRemotePassword.Set(V.Screen.FormFTP!txtPassword.Text)
+
+	v.Local.sRemotePort.Set(V.Screen.FormFTP!txtRemotePort.Text)
+
+	v.Local.sRemotePath.Set(V.Screen.FormFTP!txtPickupPath.Text)
+	
+	f.Intrinsic.Control.AddEventHandler("SFTPDirList","Listdir")
+	
+	'logon credentials.
+	f.Communication.SFTP.SetProperty("SSHAcceptServerAuthentication","true")
+	f.Communication.SFTP.SetProperty("remoteHost", v.Local.sRemoteHost.Trim)
+	f.Communication.SFTP.SetProperty("User", v.Local.sRemoteUser.Trim)
+	f.Communication.SFTP.SetProperty("Password", v.Local.sRemotePassword.Trim)
+	f.Communication.SFTP.SetProperty("remotePort", v.Local.sRemotePort)
+	
+	f.Communication.SFTP.Logon
+	f.Communication.SFTP.SetProperty("RemotePath", v.Local.sRemotePath)
+
+	F.Communication.SFTP.ListDirectory
+	f.Intrinsic.UI.Msgbox("Successful")
+	
+	f.Communication.SFTP.Logoff	
+	
+	F.Intrinsic.Control.ExitSub
+	
+f.Intrinsic.Control.Catch
+	f.Communication.SFTP.Logoff	
+	f.Intrinsic.UI.Msgbox("Connection Failed")
+	f.Intrinsic.Control.ExitSub
+f.Intrinsic.Control.EndTry
+Program.Sub.cmdTestCon_Click.End
+
+Program.Sub.txtRemoteHost_GotFocus.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+
+	Gui.FormFTP.txtRemoteHost.SelectAll
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_6211_Cred_Maint.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(FormFTP_UnLoad)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.txtRemoteHost_GotFocus.End
+
+Program.Sub.txtUser_GotFocus.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+
+	Gui.FormFTP.txtUser.SelectAll
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_6211_Cred_Maint.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(FormFTP_UnLoad)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.txtUser_GotFocus.End
+
+Program.Sub.txtPassword_GotFocus.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+
+	Gui.FormFTP.txtPassword.SelectAll
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_6211_Cred_Maint.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(FormFTP_UnLoad)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.txtPassword_GotFocus.End
+
+Program.Sub.txtRemotePort_GotFocus.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+
+	Gui.FormFTP.txtRemotePort.SelectAll
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_6211_Cred_Maint.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(FormFTP_UnLoad)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.txtRemotePort_GotFocus.End
+
+Program.Sub.txtRemotePath_GotFocus.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+
+	gui.FormFTP.txtPickupPath.SelectAll
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_6211_Cred_Maint.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(FormFTP_UnLoad)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+
+Program.Sub.txtRemotePath_GotFocus.End
+
+Program.Sub.txtWeekFile_GotFocus.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+
+	gui.FormFTP.txtProcPath.SelectAll
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_6211_Cred_Maint.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(FormFTP_UnLoad)
+	F.Intrinsic.Control.EndIf
+Program.Sub.txtWeekFile_GotFocus.End
+
+Program.Sub.txtMonthAcc_GotFocus.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+
+	gui.FormFTP.txtErrorPath.SelectAll
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_6211_Cred_Maint.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(FormFTP_UnLoad)
+	F.Intrinsic.Control.EndIf
+Program.Sub.txtMonthAcc_GotFocus.End
+
+Program.Sub.Load_Settings.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+	v.Local.sTemp.Declare(String,"")
+	V.Local.baValue.Declare(ByteArray)
+	
+	f.ODBC.Connection!con.OpenCompanyConnection
+	f.Data.DataTable.CreateFromSQL("sftpSettingsDT", "con", "Select * from GCG_6211_Settings")
+	f.ODBC.Connection!con.Close
+
+	f.Intrinsic.Control.If(v.DataTable.sftpSettingsDT.RowCount, =, 0)
+		f.Intrinsic.Control.ExitSub
+	f.Intrinsic.Control.ElseIf(v.DataTable.sftpSettingsDT.RowCount, >, 1)
+		f.Intrinsic.UI.Msgbox("Multiple Settings found. Please Contact Gloabl Shop for assistance.")
+		f.Intrinsic.Control.ExitSub
+	f.Intrinsic.Control.EndIf
+
+	v.Local.sTemp.Set(v.DataTable.sftpSettingsDT(0).RemoteHost!FieldVal)
+	F.Intrinsic.String.ConvertString2BA(V.Local.sTemp.Trim,V.Local.baValue)
+	F.Global.Encryption.Decrypt(V.Local.baValue,V.Local.sTemp)
+	Gui.FormFTP.txtRemoteHost.Text(v.Local.sTemp)
+	
+	v.Local.sTemp.Set(v.DataTable.sftpSettingsDT(0).RemoteUser!FieldVal)
+	F.Intrinsic.String.ConvertString2BA(V.Local.sTemp.Trim,V.Local.baValue)
+	F.Global.Encryption.Decrypt(V.Local.baValue,V.Local.sTemp)
+	Gui.FormFTP.txtUser.Text(v.Local.sTemp)
+	
+	v.Local.sTemp.Set(v.DataTable.sftpSettingsDT(0).RemotePassword!FieldVal)
+	F.Intrinsic.String.ConvertString2BA(V.Local.sTemp.Trim,V.Local.baValue)
+	F.Global.Encryption.Decrypt(V.Local.baValue,V.Local.sTemp)
+	Gui.FormFTP.txtPassword.Text(v.Local.sTemp)
+	
+	v.Local.sTemp.Set(v.DataTable.sftpSettingsDT(0).RemotePort!FieldVal)
+	F.Intrinsic.String.ConvertString2BA(V.Local.sTemp.Trim,V.Local.baValue)
+	F.Global.Encryption.Decrypt(V.Local.baValue,V.Local.sTemp)
+	Gui.FormFTP.txtRemotePort.Text(v.Local.sTemp)
+	
+	v.Local.sTemp.Set(v.DataTable.sftpSettingsDT(0).Pickup_Path!FieldVal)
+	F.Intrinsic.String.ConvertString2BA(V.Local.sTemp.Trim,V.Local.baValue)
+	F.Global.Encryption.Decrypt(V.Local.baValue,V.Local.sTemp)
+	gui.FormFTP.txtPickupPath.Text(v.Local.sTemp)
+	
+	V.Local.sTemp.Set(v.DataTable.sftpSettingsDT(0).Dropoff_Path!FieldVal)
+	F.Intrinsic.String.ConvertString2BA(V.Local.sTemp.Trim,V.Local.baValue)
+	F.Global.Encryption.Decrypt(V.Local.baValue,V.Local.sTemp)
+	gui.FormFTP.txtDropPath.Text(v.Local.sTemp)
+
+	v.Local.sTemp.Set(v.DataTable.sftpSettingsDT(0).Proc_Path!FieldVal)
+	F.Intrinsic.String.ConvertString2BA(V.Local.sTemp.Trim,V.Local.baValue)
+	F.Global.Encryption.Decrypt(V.Local.baValue,V.Local.sTemp)
+	gui.FormFTP.txtProcPath.Text(v.Local.sTemp)
+	
+	v.Local.sTemp.Set(v.DataTable.sftpSettingsDT(0).Error_Path!FieldVal)
+	F.Intrinsic.String.ConvertString2BA(V.Local.sTemp.Trim,V.Local.baValue)
+	F.Global.Encryption.Decrypt(V.Local.baValue,V.Local.sTemp)
+	gui.FormFTP.txtErrorPath.Text(v.Local.sTemp)
+	
+	f.Data.DataTable.Close("sftpSettingsDT")
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_6211_Cred_Maint.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(FormFTP_UnLoad)
+	F.Intrinsic.Control.EndIf
+Program.Sub.Load_Settings.End
