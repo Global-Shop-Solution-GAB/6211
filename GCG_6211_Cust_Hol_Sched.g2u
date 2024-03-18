@@ -1,0 +1,271 @@
+Program.Sub.ScreenSU.Start
+Gui.FHalfHolSched..Create
+Gui.FHalfHolSched..Caption("Customer Holiday Schedule")
+Gui.FHalfHolSched..Size(11370,6015)
+Gui.FHalfHolSched..MinX(0)
+Gui.FHalfHolSched..MinY(0)
+Gui.FHalfHolSched..Event(UnLoad,FHalfHolSched_UnLoad)
+Gui.FHalfHolSched..Position(0,0)
+Gui.FHalfHolSched..BackColor(-2147483633)
+Gui.FHalfHolSched..MousePointer(0)
+Gui.FHalfHolSched.lblHoliday1.Create(Label,"Holiday 1",True,1305,255,0,105,195,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday2.Create(Label,"Holiday 2",True,1305,255,0,105,855,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday3.Create(Label,"Holiday 3",True,1305,255,0,105,1545,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday4.Create(Label,"Holiday 4",True,1305,255,0,105,2205,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday5.Create(Label,"Holiday 5",True,1305,255,0,105,2895,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday6.Create(Label,"Holiday 6",True,1305,255,0,105,3570,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday7.Create(Label,"Holiday 7",True,1305,255,0,105,4245,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday8.Create(Label,"Holiday 8",True,1305,255,0,2370,195,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday9.Create(Label,"Holiday 9",True,1305,255,0,2370,855,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday10.Create(Label,"Holiday 10",True,1305,255,0,2370,1545,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday11.Create(Label,"Holiday 11",True,1305,255,0,2370,2205,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday12.Create(Label,"Holiday 12",True,1305,255,0,2370,2895,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday13.Create(Label,"Holiday 13",True,1305,255,0,2370,3570,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday14.Create(Label,"Holiday 14",True,1305,255,0,2370,4245,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday15.Create(Label,"Holiday 15",True,1305,255,0,4605,195,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday16.Create(Label,"Holiday 16",True,1305,255,0,4605,855,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday17.Create(Label,"Holiday 17",True,1305,255,0,4605,1545,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday18.Create(Label,"Holiday 18",True,1305,255,0,4605,2205,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday19.Create(Label,"Holiday 19",True,1305,255,0,4605,2895,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday20.Create(Label,"Holiday 20",True,1305,255,0,4605,3570,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday21.Create(Label,"Holiday 21",True,1305,255,0,4605,4245,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday22.Create(Label,"Holiday 22",True,1305,255,0,6855,195,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday23.Create(Label,"Holiday 23",True,1305,255,0,6855,855,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday24.Create(Label,"Holiday 24",True,1305,255,0,6855,1545,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday25.Create(Label,"Holiday 25",True,1305,255,0,6855,2205,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday26.Create(Label,"Holiday 26",True,1305,255,0,6855,2895,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday27.Create(Label,"Holiday 27",True,1305,255,0,6855,3570,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday28.Create(Label,"Holiday 28",True,1305,255,0,6855,4245,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday29.Create(Label,"Holiday 29",True,1305,255,0,9090,195,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.lblHoliday30.Create(Label,"Holiday 30",True,1305,255,0,9090,855,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.dtp1.Create(DatePicker)
+Gui.FHalfHolSched.dtp1.Size(1935,285)
+Gui.FHalfHolSched.dtp1.Position(105,420)
+Gui.FHalfHolSched.dtp2.Create(DatePicker)
+Gui.FHalfHolSched.dtp2.Size(1935,285)
+Gui.FHalfHolSched.dtp2.Position(105,1095)
+Gui.FHalfHolSched.dtp3.Create(DatePicker)
+Gui.FHalfHolSched.dtp3.Size(1935,285)
+Gui.FHalfHolSched.dtp3.Position(105,1770)
+Gui.FHalfHolSched.dtp4.Create(DatePicker)
+Gui.FHalfHolSched.dtp4.Size(1935,285)
+Gui.FHalfHolSched.dtp4.Position(105,2445)
+Gui.FHalfHolSched.dtp5.Create(DatePicker)
+Gui.FHalfHolSched.dtp5.Size(1935,285)
+Gui.FHalfHolSched.dtp5.Position(105,3120)
+Gui.FHalfHolSched.dtp6.Create(DatePicker)
+Gui.FHalfHolSched.dtp6.Size(1935,285)
+Gui.FHalfHolSched.dtp6.Position(105,3795)
+Gui.FHalfHolSched.dtp7.Create(DatePicker)
+Gui.FHalfHolSched.dtp7.Size(1935,285)
+Gui.FHalfHolSched.dtp7.Position(105,4470)
+Gui.FHalfHolSched.dtp8.Create(DatePicker)
+Gui.FHalfHolSched.dtp8.Size(1935,285)
+Gui.FHalfHolSched.dtp8.Position(2370,420)
+Gui.FHalfHolSched.dtp9.Create(DatePicker)
+Gui.FHalfHolSched.dtp9.Size(1935,285)
+Gui.FHalfHolSched.dtp9.Position(2370,1095)
+Gui.FHalfHolSched.dtp10.Create(DatePicker)
+Gui.FHalfHolSched.dtp10.Size(1935,285)
+Gui.FHalfHolSched.dtp10.Position(2370,1770)
+Gui.FHalfHolSched.dtp11.Create(DatePicker)
+Gui.FHalfHolSched.dtp11.Size(1935,285)
+Gui.FHalfHolSched.dtp11.Position(2370,2445)
+Gui.FHalfHolSched.dtp12.Create(DatePicker)
+Gui.FHalfHolSched.dtp12.Size(1935,285)
+Gui.FHalfHolSched.dtp12.Position(2370,3120)
+Gui.FHalfHolSched.dtp13.Create(DatePicker)
+Gui.FHalfHolSched.dtp13.Size(1935,285)
+Gui.FHalfHolSched.dtp13.Position(2370,3795)
+Gui.FHalfHolSched.dtp14.Create(DatePicker)
+Gui.FHalfHolSched.dtp14.Size(1935,285)
+Gui.FHalfHolSched.dtp14.Position(2370,4470)
+Gui.FHalfHolSched.dtp15.Create(DatePicker)
+Gui.FHalfHolSched.dtp15.Size(1935,285)
+Gui.FHalfHolSched.dtp15.Position(4605,420)
+Gui.FHalfHolSched.dtp16.Create(DatePicker)
+Gui.FHalfHolSched.dtp16.Size(1935,285)
+Gui.FHalfHolSched.dtp16.Position(4605,1095)
+Gui.FHalfHolSched.dtp17.Create(DatePicker)
+Gui.FHalfHolSched.dtp17.Size(1935,285)
+Gui.FHalfHolSched.dtp17.Position(4605,1770)
+Gui.FHalfHolSched.dtp18.Create(DatePicker)
+Gui.FHalfHolSched.dtp18.Size(1935,285)
+Gui.FHalfHolSched.dtp18.Position(4605,2445)
+Gui.FHalfHolSched.dtp19.Create(DatePicker)
+Gui.FHalfHolSched.dtp19.Size(1935,285)
+Gui.FHalfHolSched.dtp19.Position(4605,3120)
+Gui.FHalfHolSched.dtp20.Create(DatePicker)
+Gui.FHalfHolSched.dtp20.Size(1935,285)
+Gui.FHalfHolSched.dtp20.Position(4605,3795)
+Gui.FHalfHolSched.dtp21.Create(DatePicker)
+Gui.FHalfHolSched.dtp21.Size(1935,285)
+Gui.FHalfHolSched.dtp21.Position(4605,4470)
+Gui.FHalfHolSched.dtp22.Create(DatePicker)
+Gui.FHalfHolSched.dtp22.Size(1935,285)
+Gui.FHalfHolSched.dtp22.Position(6855,420)
+Gui.FHalfHolSched.dtp23.Create(DatePicker)
+Gui.FHalfHolSched.dtp23.Size(1935,285)
+Gui.FHalfHolSched.dtp23.Position(6855,1095)
+Gui.FHalfHolSched.dtp24.Create(DatePicker)
+Gui.FHalfHolSched.dtp24.Size(1935,285)
+Gui.FHalfHolSched.dtp24.Position(6855,1770)
+Gui.FHalfHolSched.dtp25.Create(DatePicker)
+Gui.FHalfHolSched.dtp25.Size(1935,285)
+Gui.FHalfHolSched.dtp25.Position(6855,2445)
+Gui.FHalfHolSched.dtp26.Create(DatePicker)
+Gui.FHalfHolSched.dtp26.Size(1935,285)
+Gui.FHalfHolSched.dtp26.Position(6855,3120)
+Gui.FHalfHolSched.dtp27.Create(DatePicker)
+Gui.FHalfHolSched.dtp27.Size(1935,285)
+Gui.FHalfHolSched.dtp27.Position(6855,3795)
+Gui.FHalfHolSched.dtp28.Create(DatePicker)
+Gui.FHalfHolSched.dtp28.Size(1935,285)
+Gui.FHalfHolSched.dtp28.Position(6855,4470)
+Gui.FHalfHolSched.dtp29.Create(DatePicker)
+Gui.FHalfHolSched.dtp29.Size(1935,285)
+Gui.FHalfHolSched.dtp29.Position(9090,420)
+Gui.FHalfHolSched.dtp30.Create(DatePicker)
+Gui.FHalfHolSched.dtp30.Size(1935,285)
+Gui.FHalfHolSched.dtp30.Position(9090,1095)
+Gui.FHalfHolSched.cmdSave.Create(Button)
+Gui.FHalfHolSched.cmdSave.Size(1095,435)
+Gui.FHalfHolSched.cmdSave.Position(120,4980)
+Gui.FHalfHolSched.cmdSave.Caption("Save")
+Gui.FHalfHolSched.cmdSave.Event(Click,cmdSave_Click)
+Gui.FHalfHolSched.txtCust.Create(TextBox,"",True,1440,300,0,2550,5040,True,0,"Arial",8,-2147483643,1)
+Gui.FHalfHolSched.txtCust.MaxLength(6)
+Gui.FHalfHolSched.txtCust.ForeColor(0)
+Gui.FHalfHolSched.lblCust.Create(Label,"Customer #",True,1155,255,0,1335,5130,True,0,"Arial",8,-2147483633,0)
+Gui.FHalfHolSched.cmdCust.Create(Button)
+Gui.FHalfHolSched.cmdCust.Size(450,375)
+Gui.FHalfHolSched.cmdCust.Position(4035,5010)
+Gui.FHalfHolSched.cmdCust.Caption("^")
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(Get_Data)
+
+Gui.FHalfHolSched..Show
+Gui.FHalfHolSched..AlwaysOnTop(True)
+Gui.FHalfHolSched..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Cust_Hol_Sched.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FHalfHolSched_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.FHalfHolSched_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FHalfHolSched_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FHalfHolSched_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Cust_Hol_Sched.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FHalfHolSched_UnLoad.End
+
+Program.Sub.cmdSave_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdSave_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.sHol.Declare(String,"")
+V.Local.sCol.Declare(String,"")
+V.Local.sDP.Declare(String,"")
+
+F.Intrinsic.Control.For(V.Local.i,1,30,1)
+	F.Intrinsic.String.Build("dtp{0}",V.Local.i,V.Local.sDP)
+	F.Intrinsic.String.Build("Holiday_{0}",V.Local.i,V.Local.sCol)
+	V.Local.sHol.Set(V.Screen.FHalfHolSched![V.Local.sDP].Value)
+	F.Data.DataTable.SetValue("Hol",-1,V.Local.sCol,V.Local.sHol)
+F.Intrinsic.Control.Next(V.Local.i)
+
+F.Data.DataTable.SetValue("Hol",-1,"Customer",V.Screen.FHalfHolSched!txtCust.Text)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+	F.Data.DataTable.SaveToDB("Hol","con","GCG_6211_C_HOL_SCHED","Company",7)
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.UI.Msgbox("Customer Holiday Schedule Saved.........","Attention")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdSave_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Cust_Hol_Sched.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FHalfHolSched_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.sDP.Declare(String,"")
+V.Local.sHol.Declare(String,"")
+V.Local.sCol.Declare(String,"")
+
+F.Intrinsic.String.Build("Select * From GCG_6211_C_HOL_SCHED Where Company = '{0}'",V.Caller.CompanyCode,V.Local.sSql)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.DataTable.CreateFromSQL("Hol","con",V.Local.sSql,True)
+
+F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.If(V.DataTable.Hol.RowCount--,=,-1)
+	F.Data.DataTable.AddRow("Hol","Company",V.Caller.CompanyCode)
+	F.Intrinsic.Control.For(V.Local.i,1,30,1)
+		F.Intrinsic.String.Build("dtp{0}",V.Local.i,V.Local.sDP)
+		Gui.FHalfHolSched.[V.Local.sDP].Value("01/01/1900")
+	F.Intrinsic.Control.Next(V.Local.i)
+F.Intrinsic.Control.Else
+	Gui.FHalfHolSched.txtCust.Text(V.DataTable.Hol(V.DataTable.Hol.RowCount--).Customer!FieldValTrim)
+	F.Intrinsic.Control.For(V.Local.i,1,30,1)
+		F.Intrinsic.String.Build("dtp{0}",V.Local.i,V.Local.sDP)
+		F.Intrinsic.String.Build("Holiday_{0}",V.Local.i,V.Local.sCol)
+		V.Local.sHol.Set(V.DataTable.Hol(V.DataTable.Hol.RowCount--).[V.Local.sCol]!FieldValTrim)
+		Gui.FHalfHolSched.[V.Local.sDP].Value(V.Local.sHol)
+	F.Intrinsic.Control.Next(V.Local.i)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Cust_Hol_Sched.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FHalfHolSched_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$rking$}$20200824073632644$}$QNdZLVy4bWuiWa9jh1ZTiDOFZJZn2JZMG284M6uyPZBpDH4bn3aQLA3xdIDd1/6gN5koMX6saTo=
+Program.Sub.Comments.End
