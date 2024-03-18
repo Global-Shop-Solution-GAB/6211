@@ -1,0 +1,435 @@
+Program.Sub.ScreenSU.Start
+Gui.FormPallet..Create
+Gui.FormPallet..Caption("Assign Box Numbers to Pallets")
+Gui.FormPallet..Size(7305,7935)
+Gui.FormPallet..MinX(0)
+Gui.FormPallet..MinY(0)
+Gui.FormPallet..Position(0,0)
+Gui.FormPallet..BackColor(-2147483633)
+Gui.FormPallet..MousePointer(0)
+Gui.FormPallet..Event(UnLoad,FormPallet_UnLoad)
+Gui.FormPallet.lblBox.Create(Label,"Scan Box Number",True,1935,255,0,165,165,True,0,"Arial",8,-2147483633,0)
+Gui.FormPallet.txtBox.Create(TextBox,"",True,2040,300,0,165,405,True,0,"Arial",8,-2147483643,1)
+Gui.FormPallet.txtBox.Event(GotFocus,txtBox_GotFocus)
+Gui.FormPallet.txtBox.Event(KeyPressEnter,txtBox_KeyPressEnter)
+Gui.FormPallet.GsGridControl1.Create(GsGridControl)
+Gui.FormPallet.GsGridControl1.Size(6870,6270)
+Gui.FormPallet.GsGridControl1.Position(165,1020)
+Gui.FormPallet.GsGridControl1.Anchor(15)
+Gui.FormPallet.GsGridControl1.Event(RowCellClick,GsGridControl1_RowCellClick)
+Gui.FormPallet.lblAssign.Create(Label,"Get Assign Pallet for Scaned Box Numbers",True,4095,255,0,195,795,True,0,"Arial",8,-2147483633,0)
+Gui.FormPallet.lblPrinter.Create(Label,"Label Printer",True,1935,255,0,5100,285,True,0,"Arial",8,-2147483633,0)
+Gui.FormPallet.lblPrinter.Anchor(9)
+Gui.FormPallet.ddlPrinter.Create(DropDownList)
+Gui.FormPallet.ddlPrinter.Size(1950,330)
+Gui.FormPallet.ddlPrinter.Position(5070,570)
+Gui.FormPallet.ddlPrinter.Anchor(9)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.iRPT.Declare(Long,0)
+V.Global.iIndex.Declare(Long,-1)
+V.Global.iRec_No.Declare(Long,-1)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(Build_Empty_DT)
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+Gui.FormPallet..Show
+
+Gui.FormPallet..AlwaysOnTop(True)
+Gui.FormPallet..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Pallet.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormPallet_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.FormPallet_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormPallet_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.ODBC.Con.State,=,1)
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormPallet_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormPallet_UnLoad.End
+
+Program.Sub.txtBox_GotFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtBox_GotFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+gui.FormPallet.txtBox.SelectAll
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtBox_GotFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Pallet.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormPallet_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtBox_GotFocus.End
+
+Program.Sub.txtBox_KeyPressEnter.Start
+F.Intrinsic.Control.SetErrorHandler("txtBox_KeyPressEnter_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(Box_Proc)
+
+F.Intrinsic.Control.BlockEvents
+Gui.FormPallet.txtBox.Text("")
+Gui.FormPallet.txtBox.SetFocus
+F.Intrinsic.Control.UnBlockEvents
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtBox_KeyPressEnter_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Pallet.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormPallet_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtBox_KeyPressEnter.End
+
+Program.Sub.Build_Empty_DT.Start
+F.Intrinsic.Control.SetErrorHandler("Build_Empty_DT_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+
+F.ODBC.Connection!ConC.OpenCommonConnection
+
+'creating datatable for sentinel enabled printers
+V.Local.sSql.Set("Select PrinterName, rtrim(Sentinelalias) From Server_Printers Where Sentinelenabled = 1 Order By Sentinelalias")
+F.Data.Dictionary.CreateFromSQL("Printer","ConC",V.Local.sSql)
+
+Gui.FormPallet.ddlPrinter.AddItem(" ",0)
+Gui.FormPallet.ddlPrinter.AddItems("Dictionary","Printer")
+
+F.ODBC.Connection!ConC.Close
+
+F.Global.BI.GetIDFromName("GCG_6211_Pallet.rpt",V.Global.iRpt)
+
+F.Data.DataTable.Create("BoxNumber",True)
+
+F.Data.DataTable.AddColumn("BoxNumber","Rec_No",Long)
+F.Data.DataTable.AddColumn("BoxNumber","BoxNum",String)
+F.Data.DataTable.AddColumn("BoxNumber","Pallet",String)
+F.Data.DataTable.AddColumn("BoxNumber","Reprint_Box",String)
+F.Data.DataTable.AddColumn("BoxNumber","Reprint_Pallet",String)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Build_Empty_DT_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Pallet.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormPallet_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Build_Empty_DT.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Data.DataView.Create("BoxNumber","VBoxNumber",22,"","Rec_No Desc")
+
+Gui.FormPallet.GsGridControl1.AddGridviewFromDataview("GBoxNumber","BoxNumber","VBoxNumber")
+
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Rec_No","Caption","Rec No")
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","BoxNum","Caption","Box Number")
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Pallet","Caption","Pallet Number")
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Reprint_Box","Caption"," ")
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Reprint_Pallet","Caption"," ")
+
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Rec_No","Visible",False)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","BoxNum","Visible",True)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Pallet","Visible",True)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Reprint_Box","Visible",True)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Reprint_Pallet","Visible",True)
+
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Rec_No","AllowEdit",False)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","BoxNum","AllowEdit",False)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Pallet","AllowEdit",False)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Reprint_Box","AllowEdit",False)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Reprint_Pallet","AllowEdit",False)
+
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Rec_No","ReadOnly",True)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","BoxNum","ReadOnly",True)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Pallet","ReadOnly",True)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Reprint_Box","ReadOnly",True)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Reprint_Pallet","ReadOnly",True)
+
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Rec_No","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","BoxNum","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Pallet","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Reprint_Box","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Reprint_Pallet","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Rec_No","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","BoxNum","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Pallet","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Reprint_Box","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Reprint_Pallet","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Rec_No","HeaderFontBold",True)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","BoxNum","HeaderFontBold",True)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Pallet","HeaderFontBold",True)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Reprint_Box","HeaderFontBold",True)
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Reprint_Pallet","HeaderFontBold",True)
+
+Gui.FormPallet.GsGridControl1.ColumnEdit("GBoxNumber","Reprint_Box","EditorButton","Reprint Box")
+Gui.FormPallet.GsGridControl1.ColumnEdit("GBoxNumber","Reprint_Pallet","EditorButton","Reprint Pallet")
+
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Reprint_Box","Fixed","Right")
+Gui.FormPallet.GsGridControl1.SetColumnProperty("GBoxNumber","Reprint_Pallet","Fixed","Right")
+
+Gui.FormPallet.GsGridControl1.AddStyleFormatCondition("GBoxNumber","Rec_No","ParentYellow","Equal",V.Global.iRec_No)
+Gui.FormPallet.GsGridControl1.SetStyleFormatConditionProperty("GBoxNumber","Rec_No","ParentYellow","BackColor",V.Color.Yellow)
+Gui.FormPallet.GsGridControl1.SetStyleFormatConditionProperty("GBoxNumber","Rec_No","ParentYellow","ApplyToRow",True)
+
+Gui.FormPallet.GsGridControl1.MainView("GBoxNumber")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Pallet.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormPallet_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.Box_Proc.Start
+F.Intrinsic.Control.SetErrorHandler("Box_Proc_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sBox.Declare(String,"")
+V.Local.sFilter.Declare(String,"")
+V.Local.iRec.Declare(Long,0)
+V.Local.sPallet.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.bQue.Declare(Boolean,False)
+
+V.Local.sBox.Set(V.Screen.FormPallet!txtBox.Text)
+
+F.Intrinsic.Control.If(V.Local.sBox.Trim,<>,"")
+	F.Intrinsic.String.Build("BoxNum = '{0}'",V.Local.sBox.Trim,V.Local.sFilter)
+	F.Data.DataView.Create("BoxNumber","Temp",22,V.Local.sFilter,"")
+	F.Intrinsic.Control.If(V.DataView.BoxNumber!Temp.RowCount--,<>,-1)
+		F.Intrinsic.Math.Add(V.DataView.BoxNumber!VBoxNumber(0).Rec_No!FieldValLong,1,V.Local.iRec)
+		F.Data.DataView.SetValue("BoxNumber","Temp",-1,"Rec_No",V.Local.iRec)
+		V.Global.iRec_No.Set(V.Local.iRec)
+	F.Intrinsic.Control.Else
+		F.ODBC.Connection!Con.OpenCompanyConnection
+		F.Intrinsic.String.Build("Select Distinct rtrim(PalletNum) as PalletNum From GCG_6211_Serial_Data Where BoxNum = '{0}'",V.Local.sBox.Trim,V.Local.sSql)
+		F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sPallet)
+		F.Intrinsic.String.Build("Select Top 1 BOX_QUEUED From GCG_6211_Serial_Data Where BoxNum = '{0}'",V.Local.sBox.Trim,V.Local.sSql)
+		F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.bQue)
+		F.Intrinsic.Control.If(V.Local.bQue,=,False)
+			F.Intrinsic.String.Build("Update GCG_6211_Serial_Data Set BOX_QUEUED = 1 Where BoxNum = '{0}'",V.Local.sBox.Trim,V.Local.sSql)
+			F.ODBC.Connection!Con.Execute(V.Local.sSql)
+			F.Intrinsic.String.Build("Select Job, Suffix, Serial From GCG_6211_Serial_Data Where BoxNum = '{0}'",V.Local.sBox.Trim,V.Local.sSql)
+			F.Data.DataTable.CreateFromSQL("JQ","con",V.Local.sSql,True)
+			F.Data.DataTable.SaveToDB("JQ","con","GCG_6211_WIP_QUEUE","",128,"JOB@!@JOB*!*SUFFIX@!@SUFFIX*!*SERIAL@!@SERIAL")
+			F.Data.DataTable.Close("JQ")
+		F.Intrinsic.Control.EndIf
+		F.ODBC.Connection!Con.Close
+		F.Intrinsic.Control.If(V.DataView.BoxNumber!VBoxNumber.RowCount--,<>,-1)
+			F.Intrinsic.Math.Add(V.DataView.BoxNumber!VBoxNumber(0).Rec_No!FieldValLong,1,V.Local.iRec)
+		F.Intrinsic.Control.Else
+			V.Local.iRec.Set(1)
+		F.Intrinsic.Control.EndIf
+		F.Data.DataTable.AddRow("BoxNumber","BoxNum",V.Local.sBox.Trim,"Pallet",V.Local.sPallet,"Rec_No",V.Local.iRec)
+		V.Global.iIndex.Set(V.DataTable.BoxNumber.RowCount--)
+		V.Global.iRec_No.Set(V.Local.iRec)
+		F.Intrinsic.Control.CallSub(Print_Pallet,"RePrint","N")
+	F.Intrinsic.Control.EndIf
+	F.Data.DataView.Close("BoxNumber","Temp")
+F.Intrinsic.Control.EndIf
+
+Gui.FormPallet.GsGridControl1.AddStyleFormatCondition("GBoxNumber","Rec_No","ParentYellow","Equal",V.Global.iRec_No)
+Gui.FormPallet.GsGridControl1.SetStyleFormatConditionProperty("GBoxNumber","Rec_No","ParentYellow","BackColor",V.Color.Yellow)
+Gui.FormPallet.GsGridControl1.SetStyleFormatConditionProperty("GBoxNumber","Rec_No","ParentYellow","ApplyToRow",True)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Box_Proc_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Pallet.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormPallet_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Box_Proc.End
+
+Program.Sub.GsGridControl1_RowCellClick.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridControl1_RowCellClick_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.SelectCase(V.Args.Column.UCase)
+	F.Intrinsic.Control.Case("REPRINT_BOX")
+		V.Global.iIndex.Set(V.DataView.BoxNumber!VBoxNumber(V.Args.RowIndex)!DataTableIndex)
+		F.Intrinsic.Control.CallSub(Print_Box)
+		
+	F.Intrinsic.Control.Case("REPRINT_PALLET")
+		V.Global.iIndex.Set(V.DataView.BoxNumber!VBoxNumber(V.Args.RowIndex)!DataTableIndex)
+		F.Intrinsic.Control.CallSub(Print_Pallet,"RePrint","Y")
+		
+F.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridControl1_RowCellClick_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Pallet.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormPallet_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridControl1_RowCellClick.End
+
+Program.Sub.Print_Pallet.Start
+F.Intrinsic.Control.SetErrorHandler("Print_Pallet_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sBoxs.Declare(String,"")
+V.Local.sFirstBox.Declare(String,"")
+V.Local.sLastBox.Declare(String,"")
+V.Local.sPlate.Declare(String,"")
+V.Local.iRunID.Declare(Long,0)
+V.Local.iLogID.Declare(Long,0)
+V.Local.sPrinter.Declare(STring,"")
+V.Local.i.Declare(Long,0)
+V.Local.sParams.Declare(String,"")
+V.Local.sValues.Declare(String,"")
+V.Local.iRet.Declare(Long,0)
+
+V.Local.sPrinter.Set(V.Screen.FormPallet!ddlPrinter.Value)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.Control.If(V.Args.RePrint,=,"Y")
+	F.Intrinsic.String.Build("Select Distinct rtrim(PalletNum) as PalletNum, Order_NO From GCG_6211_Serial_Data Where PalletNum = '{0}' Order By Seq",V.DataTable.BoxNumber(V.Global.iIndex).Pallet!FieldValTrim,V.Local.sSql)
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Build("Select Distinct rtrim(PalletNum) as PalletNum, Order_NO From GCG_6211_Serial_Data Where PalletNum = '{0}' and Pallet_Printed = 0 Order By Seq",V.DataTable.BoxNumber(V.Global.iIndex).Pallet!FieldValTrim,V.Local.sSql)
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.CreateFromSQL("BoxTemp","con",V.Local.sSql)
+
+F.Intrinsic.Control.If(V.DataTable.BoxTemp.RowCount--,<>,-1)
+	F.Global.BI.GetRunID(V.Local.iRunID)
+	F.Global.BI.StartLogging(V.Local.iRunID,V.Global.iRpt,-1,"GCG_6211_Pallet",V.Local.iLogID)
+	F.Global.BI.StopLogging(V.Local.iLogID)
+	V.Local.sParams.Set("Pallet*!*OrderNO")
+	F.Intrinsic.String.Build("{0}*!*{1}",V.DataTable.BoxTemp(V.DataTable.BoxTemp.RowCount--).PalletNum!FieldValTrim,V.DataTable.BoxTemp(V.DataTable.BoxTemp.RowCount--).Order_No!FieldValTrim,V.Local.sValues)
+	F.Global.BI.RunReportPreProcessor(V.Local.iRunID,V.Local.iLogID,V.Local.sParams,V.Local.sValues,"",-1,False,"",-1,"",-1,"","",V.Local.iRet)
+	F.Intrinsic.String.Build("Update GCG_6211_Serial_Data Set Pallet_Printed = 1 Where PalletNum = '{0}'",V.DataTable.BoxTemp(V.DataTable.BoxTemp.RowCount--).PalletNum!FieldValTrim,V.Local.sSql)
+	F.ODBC.Connection!Con.Execute(V.Local.sSql)
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Print_Pallet_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Pallet.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormPallet_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Print_Pallet.End
+
+Program.Sub.Print_Box.Start
+F.Intrinsic.Control.SetErrorHandler("Print_Box_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.iBoxRpt.Declare(Long,0)
+V.Local.sPrinter.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.sBoxof.Declare(String,"")
+V.Local.sFilter.Declare(String,"")
+V.Local.iRunID.Declare(Long,0)
+V.Local.iLogID.Declare(Long,0)
+
+V.Local.sPrinter.Set(V.Screen.FormPallet!ddlPrinter.Value)
+
+F.Global.BI.GetIDFromName("GCG_6211_BoxNum.lab",V.Local.iBoxRpt)
+
+F.Data.DataTable.Create("LabelBox",True)
+
+F.Data.DataTable.AddColumn("LabelBox","BoxNum",String)
+F.Data.DataTable.AddColumn("LabelBox","PONum",String)
+F.Data.DataTable.AddColumn("LabelBox","PlateType",String)
+F.Data.DataTable.AddColumn("LabelBox","First",String)
+F.Data.DataTable.AddColumn("LabelBox","Last",String)
+F.Data.DataTable.AddColumn("LabelBox","Boxof",String)
+
+F.Intrinsic.String.Build("Select BoxNum, PONum, VehType GCG_6211_Serial_Data Where PalletNum = '{0}' Order By Seq",V.DataTable.BoxNumber(V.Global.iIndex).Pallet!FieldValTrim,V.Local.sSql)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.DataTable.CreateFromSQL("PlateData","con",V.Local.sSql)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.If(V.DataTable.PlateData.RowCount--,<>,-1)
+	F.Intrinsic.String.Build("BoxNum = '{0}'",V.DataTable.BoxNumber(V.Global.iIndex).BoxNum!FieldValTrim,V.Local.sFilter)
+	
+	F.Data.DataView.Create("PlateData","VBox",22,V.Local.sFilter,"")
+	F.Intrinsic.Math.Add(V.DataView.PlateData!VBox(V.DataView.PlateData!VBox.RowCount--).DataTableIndex,1,V.Local.i)
+	F.Data.DataView.Close("PlateData","VBox")
+	
+	F.Intrinsic.String.Build("Box: {0} of {1}",V.Local.i,V.DataTable.PlateData.RowCount,V.Local.sBoxof)
+	F.Data.DataTable.AddRow("LabelBox","BoxNum",V.DataTable.BoxNumber(V.Global.iIndex).BoxNum!FieldValTrim,"PONUM",V.DataTable.PlateData(V.DataTable.PlateData.RowCount--).PONum!FieldValTrim,"PlateType",V.DataTable.PlateData(V.DataTable.PlateData.RowCount--).VehType!FieldValTrim,"First",V.DataTable.PlateData(0).BoxNum!FieldValTrim,"Last",V.DataTable.PlateData(V.DataTable.PlateData.RowCount--).BoxNum!FieldValTrim,"Boxof",V.Local.sBoxof)
+	F.Global.BI.GetRunID(V.Local.iRunID)
+	F.Global.BI.StartLogging(V.Local.iRunID,V.Local.iBoxRpt,-1,"GCG_6211_BoxNumber",V.Local.iLogID)
+	F.Global.BI.StopLogging(V.Local.iLogID)
+	F.Global.BI.PrintCodesoftLabelFromDataTable(V.Local.iRunID,V.Local.iLogID,"LabelBox",V.Local.sPrinter,False)
+F.Intrinsic.Control.EndIf
+F.Data.DataTable.Close("PlateData")
+F.Data.DataTable.Close("LabelBox")
+		
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Print_Box_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Pallet.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormPallet_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Print_Box.End
