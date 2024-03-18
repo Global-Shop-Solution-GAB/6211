@@ -1,0 +1,279 @@
+Program.Sub.ScreenSU.Start
+Gui.FormUtsch..Create
+Gui.FormUtsch..Caption("Utsch Batch Assign Screen")
+Gui.FormUtsch..Size(12120,10725)
+Gui.FormUtsch..MinX(0)
+Gui.FormUtsch..MinY(0)
+Gui.FormUtsch..Position(0,0)
+Gui.FormUtsch..BackColor(-2147483633)
+Gui.FormUtsch..MousePointer(0)
+Gui.FormUtsch..Event(UnLoad,FormUtsch_UnLoad)
+Gui.FormUtsch.lblMachineTo.Create(Label,"To Machine",True,1935,255,0,105,90,True,0,"Arial",8,-2147483633,0)
+Gui.FormUtsch.ddlMachineTo.Create(DropDownList)
+Gui.FormUtsch.ddlMachineTo.Size(1695,330)
+Gui.FormUtsch.ddlMachineTo.Position(105,330)
+Gui.FormUtsch.GsGridControl1.Create(GsGridControl)
+Gui.FormUtsch.GsGridControl1.Size(11745,8895)
+Gui.FormUtsch.GsGridControl1.Position(105,780)
+Gui.FormUtsch.cmdMove.Create(Button)
+Gui.FormUtsch.cmdMove.Size(855,375)
+Gui.FormUtsch.cmdMove.Position(105,9765)
+Gui.FormUtsch.cmdMove.Caption("Assign")
+Gui.FormUtsch.cmdMove.Event(Click,cmdMove_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.Caller.Hook,=,"49760")
+	F.Intrinsic.Control.CallSub(Set_Properties)
+	
+	F.Intrinsic.Control.CallSub(Get_Files)
+	
+	Gui.FormUtsch..Show
+	
+	Gui.FormUtsch..AlwaysOnTop(True)
+	Gui.FormUtsch..AlwaysOnTop(False)
+F.Intrinsic.Control.Else
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Utsch_Assign.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormUtsch_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.FormUtsch_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormUtsch_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.ODBC.Con.State,=,1)
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormUtsch_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormUtsch_UnLoad.End
+
+Program.Sub.cmdMove_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdMove_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sMachine.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.sTarget.Declare(String,"")
+V.Local.sFile.Declare(String,"")
+V.Local.sFilter.Declare(String,"")
+V.Local.sTargetFile.Declare(String,"")
+V.Local.iRet.Declare(Long,0)
+
+V.Local.sMachine.Set(V.Screen.FormUtsch!ddlMachineTo.Value)
+
+F.Intrinsic.String.Build("Machine = '{0}'",V.Local.sMachine.Trim,V.Local.sFilter)
+F.Data.DataView.Create("Machine","VMachine",22,V.Local.sFilter,"")
+V.Local.sTarget.Set(V.DataView.Machine!VMachine(V.DataView.Machine!VMachine.RowCount--).M_Path!FieldValTrim)
+F.Intrinsic.Control.If(v.Local.sTarget.Right1,<>,"\")
+	F.Intrinsic.String.Build("{0}\",V.Local.sTarget,V.Local.sTarget)
+F.Intrinsic.Control.EndIf
+F.Data.DataView.Close("Machine","VMachine")
+
+F.Data.DataView.Create("Files","VFiles",22,"Selection = True","")
+F.Intrinsic.Control.If(V.DataView.Files!VFiles.RowCount--,<>,-1)
+	Gui.FormUtsch..Enabled(False)
+	F.Intrinsic.UI.InvokeWaitDialog("Moving Files.........")
+	F.Intrinsic.Control.For(V.Local.i,V.DataView.Files!VFiles.RowCount--,0,-1)
+		F.Intrinsic.String.Build("{0}{1}",V.DataView.Files!VFiles(V.Local.i).File_Loc!FieldValTrim,V.DataView.Files!VFiles(V.Local.i).FileName!FieldValTrim,V.Local.sFile)
+		F.Intrinsic.String.Build("{0}{1}",V.Local.sTarget,V.DataView.Files!VFiles(V.Local.i).FileName!FieldValTrim,V.Local.sTargetFile)
+		F.Intrinsic.Control.If(V.Local.sFile.Trim,<>,V.Local.sTargetFile.Trim)
+			F.Intrinsic.File.MoveFile(V.Local.sFile,V.Local.sTargetFile,V.Local.iRet)
+		F.Intrinsic.Control.EndIf
+		F.Data.DataTable.DeleteRow("Files",V.DataView.Files!VFiles(V.Local.i).DataTableIndex)
+	F.Intrinsic.Control.Next(V.Local.i)
+	F.Intrinsic.UI.CloseWaitDialog
+	F.Data.DataTable.AcceptChanges("Files")
+	Gui.FormUtsch..Enabled(True)
+F.Intrinsic.Control.Else
+	F.Intrinsic.UI.Msgbox("Select Batches to Move","Attention")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataView.Close("Files","VFiles")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdMove_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Utsch_Override.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormUtsch_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdMove_Click.End
+
+Program.Sub.Get_Files.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Files_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.iF.Declare(Long,0)
+V.Local.sPath.Declare(String,"")
+V.Local.sFiles.Declare(String,"")
+V.Local.sBatch.Declare(String,"")
+V.Local.sBatches.Declare(String,"")
+V.Local.sMachine.Declare(String,"")
+V.Local.iSize.Declare(Long,0)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.Control.If(V.DataTable.QPath.Exists)
+	F.Data.DataTable.Close("QPath")
+F.Intrinsic.Control.EndIf
+
+V.Local.sSql.Set("Select Distinct rtrim(Q_Path) as Q_Path From GCG_6211_Mach_Export")
+F.Data.DataTable.CreateFromSQL("QPath","con",v.Local.sSql,True)
+
+F.Intrinsic.Control.If(V.DataTable.Machine.Exists)
+	F.Data.DataTable.Close("Machine")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.CreateFromSQL("Machine","con","Select Machine, rtrim(M_Path) as M_Path From GCG_6211_Mach_Export",True)
+
+F.Data.DataTable.DeleteRow("Files")
+F.Data.DataTable.AcceptChanges("Files")
+
+F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.QPath.RowCount--,1)
+	V.Local.sPath.Set(V.DataTable.QPath(V.Local.i).Q_Path!FieldValTrim)
+	F.Intrinsic.Control.If(V.Local.sPath.Right1,<>,"\")
+		F.Intrinsic.String.Build("{0}\",V.Local.sPath,V.Local.sPath)
+	F.Intrinsic.Control.EndIf
+	F.Intrinsic.File.GetFileList(V.Local.sPath,V.Local.sFiles)
+	F.Intrinsic.String.Split(V.Local.sFiles,":",V.Local.sFiles)
+	F.Intrinsic.Control.If(V.Local.sFiles.Trim,<>,"")
+		F.Intrinsic.Control.For(v.Local.iF,0,V.Local.sFiles.UBound,1)
+			F.Intrinsic.String.Split(V.Local.sFiles(v.Local.iF),".",V.Local.sBatch)
+			F.Intrinsic.String.Build("Select Top 1 Batch_Size From GCG_6211_Serial_Data Where Batch_Num = '{0}'",V.Local.sBatch,V.Local.sSql)
+			F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.iSize)
+			F.Data.DataTable.AddRow("Files","Selection",False,"File_Loc",V.Local.sPath,"FileName",V.Local.sFiles(V.Local.iF).Trim,"Batch_Num",V.Local.sBatch,"Batch_Size",V.Local.iSize)
+			F.Intrinsic.Control.If(V.Local.sBatches.Trim,=,"")
+				V.Local.sBatches.Set(V.Local.sBatch)
+			F.Intrinsic.Control.Else
+				F.Intrinsic.String.Build("{0}','{1}",V.Local.sBatches,V.Local.sBatch,V.Local.sBatches)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Next(V.Local.iF)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Next(V.Local.i)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Files_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Utsch_Override.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormUtsch_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Files.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+Gui.FormUtsch.ddlMachineTo.AddItem(" ",0)
+
+F.Data.Dictionary.CreateFromSQL("Machine","con","Select Machine, Machine From GCG_6211_Mach_Export Where M_Path <> '' Order By Machine")
+
+Gui.FormUtsch.ddlMachineTo.AddItems("Dictionary","Machine")
+
+F.Data.Dictionary.Close("Machine")
+
+F.ODBC.Connection!Con.Close
+
+F.Data.DataTable.Create("Files",True)
+F.Data.DataTable.AddColumn("Files","Selection","Boolean")
+F.Data.DataTable.AddColumn("Files","File_Loc","String")
+F.Data.DataTable.AddColumn("Files","FileName","String")
+F.Data.DataTable.AddColumn("Files","Batch_Num","String")
+F.Data.DataTable.AddColumn("Files","Batch_Size","Long")
+
+Gui.FormUtsch.GsGridControl1.AddGridviewFromDatatable("GFiles","Files")
+
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Selection","Visible",True)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","File_Loc","Visible",False)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","FileName","Visible",False)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Batch_Num","Visible",True)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Batch_Size","Visible",True)
+
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Selection","Readonly",False)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","File_Loc","Readonly",True)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","FileName","Readonly",True)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Batch_Num","Readonly",True)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Batch_Size","Readonly",True)
+
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Selection","AllowEdit",True)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","File_Loc","AllowEdit",False)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","FileName","AllowEdit",False)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Batch_Num","AllowEdit",False)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Batch_Size","AllowEdit",False)
+
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Selection","Caption"," ")
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","File_Loc","Caption","Location")
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","FileName","Caption","File")
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Batch_Num","Caption","Batch Number")
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Batch_Size","Caption","Batch Size")
+
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Selection","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","File_Loc","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","FileName","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Batch_Num","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Batch_Size","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Selection","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","File_Loc","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","FileName","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Batch_Num","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Batch_Size","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Selection","HeaderFontBold",True)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","File_Loc","HeaderFontBold",True)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","FileName","HeaderFontBold",True)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Batch_Num","HeaderFontBold",True)
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Batch_Size","HeaderFontBold",True)
+
+Gui.FormUtsch.GsGridControl1.SetColumnProperty("GFiles","Selection","MaxWidth","75")
+
+Gui.FormUtsch.GsGridControl1.MainView("GFiles")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Utsch_Override.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormUtsch_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
