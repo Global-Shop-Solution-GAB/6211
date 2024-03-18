@@ -1,0 +1,845 @@
+Program.Sub.ScreenSU.Start
+Gui.Form..Create(DashForm)
+Gui.Form..Caption("PLATE INSPECTION - WIP TO FINSHED GOODS")
+Gui.Form..Size(1024,720)
+Gui.Form..MinX(0)
+Gui.Form..MinY(0)
+Gui.Form..Position(0,0)
+Gui.Form..AlwaysOnTop(False)
+Gui.Form..FontName("Tahoma")
+Gui.Form..FontSize(8.25)
+Gui.Form..ControlBox(True)
+Gui.Form..MaxButton(True)
+Gui.Form..MinButton(True)
+Gui.Form..MousePointer(0)
+Gui.Form..Moveable(True)
+Gui.Form..Sizeable(True)
+Gui.Form..ShowInTaskBar(True)
+Gui.Form..TitleBar(True)
+Gui.Form..Event(UnLoad,Form_UnLoad)
+Gui.Form.lblPlate.Create(Label,"PLATE NUMBER",True,560,97,0,236,138,True,2,"Tahoma",60,,0,0)
+Gui.Form.lblPlate.BorderStyle(0)
+Gui.Form.lblPlate.Anchor(13)
+Gui.Form.cmdBad.Create(Button)
+Gui.Form.cmdBad.Enabled(True)
+Gui.Form.cmdBad.Visible(True)
+Gui.Form.cmdBad.Zorder(0)
+Gui.Form.cmdBad.Size(211,186)
+Gui.Form.cmdBad.Position(12,134)
+Gui.Form.cmdBad.Caption("BAD")
+Gui.Form.cmdBad.FontName("Tahoma")
+Gui.Form.cmdBad.FontSize(12)
+Gui.Form.cmdBad.BackColor(255)
+Gui.Form.cmdBad.FontStyle(True,False,False,False,False)
+Gui.Form.cmdBad.ForeColor(16777215)
+Gui.Form.cmdBad.SvgPicture("icon_error_black")
+Gui.Form.cmdBad.SvgPictureSize(48,48)
+Gui.Form.cmdBad.Event(Click,cmdBad_Click)
+Gui.Form.cmdGood.Create(Button)
+Gui.Form.cmdGood.Enabled(True)
+Gui.Form.cmdGood.Visible(True)
+Gui.Form.cmdGood.Zorder(0)
+Gui.Form.cmdGood.Size(211,186)
+Gui.Form.cmdGood.Position(801,134)
+Gui.Form.cmdGood.Caption("GOOD")
+Gui.Form.cmdGood.BackColor(32768)
+Gui.Form.cmdGood.ForeColor(16777215)
+Gui.Form.cmdGood.FontName("Tahoma")
+Gui.Form.cmdGood.FontSize(12)
+Gui.Form.cmdGood.SvgPicture("icon_check_color")
+Gui.Form.cmdGood.SvgPictureSize(48,48)
+Gui.Form.cmdGood.FontStyle(True,False,False,False,False)
+Gui.Form.cmdGood.Event(Click,cmdGood_Click)
+Gui.Form.cmdGood.Anchor(9)
+Gui.Form.frame1.Create(Frame)
+Gui.Form.frame1.Enabled(True)
+Gui.Form.frame1.Visible(True)
+Gui.Form.frame1.Zorder(0)
+Gui.Form.frame1.Size(128,88)
+Gui.Form.frame1.Position(884,9)
+Gui.Form.frame1.Caption("Advanced Feature")
+Gui.Form.frame1.FontName("Tahoma")
+Gui.Form.frame1.FontSize(8.25)
+Gui.Form.frame1.BorderStyle(1)
+Gui.Form.frame1.Anchor(9)
+Gui.Form.cmd5.Create(Button)
+Gui.Form.cmd5.Enabled(True)
+Gui.Form.cmd5.Visible(False)
+Gui.Form.cmd5.Zorder(0)
+Gui.Form.cmd5.Size(104,50)
+Gui.Form.cmd5.Position(238,33)
+Gui.Form.cmd5.Caption("Reprint Label")
+Gui.Form.cmd5.FontName("Tahoma")
+Gui.Form.cmd5.FontSize(8.25)
+Gui.Form.cmd5.SvgPicture("icon_printer_color")
+Gui.Form.cmd5.Parent("frame1")
+Gui.Form.cmd5.FontStyle(True,False,False,False,False)
+Gui.Form.cmdLookup.Create(Button)
+Gui.Form.cmdLookup.Enabled(True)
+Gui.Form.cmdLookup.Visible(False)
+Gui.Form.cmdLookup.Zorder(0)
+Gui.Form.cmdLookup.Size(104,50)
+Gui.Form.cmdLookup.Position(182,31)
+Gui.Form.cmdLookup.Caption("Lookup Plate")
+Gui.Form.cmdLookup.FontName("Tahoma")
+Gui.Form.cmdLookup.FontSize(8.25)
+Gui.Form.cmdLookup.SvgPicture("icon_browser_color")
+Gui.Form.cmdLookup.Parent("frame1")
+Gui.Form.cmdLookup.FontStyle(True,False,False,False,False)
+Gui.Form.cmdLookup.Event(Click,cmdLookup_Click)
+Gui.Form.cmdDoc.Create(Button)
+Gui.Form.cmdDoc.Enabled(True)
+Gui.Form.cmdDoc.Visible(True)
+Gui.Form.cmdDoc.Zorder(0)
+Gui.Form.cmdDoc.Size(104,50)
+Gui.Form.cmdDoc.Position(12,33)
+Gui.Form.cmdDoc.Caption("Doc Ctrl")
+Gui.Form.cmdDoc.FontName("Tahoma")
+Gui.Form.cmdDoc.FontSize(8.25)
+Gui.Form.cmdDoc.SvgPicture("icon_dcs_green_color")
+Gui.Form.cmdDoc.Parent("frame1")
+Gui.Form.cmdDoc.FontStyle(True,False,False,False,False)
+Gui.Form.cmdDoc.Event(Click,cmdDoc_Click)
+Gui.Form.GsGridWIP.Create(GsGridControl)
+Gui.Form.GsGridWIP.Enabled(True)
+Gui.Form.GsGridWIP.Visible(True)
+Gui.Form.GsGridWIP.Zorder(0)
+Gui.Form.GsGridWIP.Size(999,306)
+Gui.Form.GsGridWIP.Position(13,323)
+Gui.Form.GsGridWIP.Anchor(15)
+Gui.Form.GsGridWIP.Event(RowCellClick,GsGridWIP_RowCellClick)
+Gui.Form.pic1.Create(PictureBox)
+Gui.Form.pic1.Enabled(True)
+Gui.Form.pic1.Visible(True)
+Gui.Form.pic1.Zorder(0)
+Gui.Form.pic1.Size(574,120)
+Gui.Form.pic1.Position(229,14)
+Gui.Form.pic1.SizeMode(4)
+Gui.Form.pic1.Anchor(13)
+Gui.Form.lblPrinter.Create(Label,"Serial Printer",True,61,13,0,13,51,True,0,"Tahoma",8.25,,0,0)
+Gui.Form.lblPrinter.BorderStyle(0)
+Gui.Form.ddlPrinter.Create(DropDownList)
+Gui.Form.ddlPrinter.Enabled(True)
+Gui.Form.ddlPrinter.Visible(True)
+Gui.Form.ddlPrinter.Zorder(0)
+Gui.Form.ddlPrinter.Size(170,20)
+Gui.Form.ddlPrinter.Position(13,69)
+Gui.Form.ddlPrinter.FontName("Tahoma")
+Gui.Form.ddlPrinter.FontSize(8.25)
+Gui.Form.lblBoxNum.Create(Label,"Box Number",True,58,13,0,13,7,True,0,"Tahoma",8.25,,0,0)
+Gui.Form.lblBoxNum.BorderStyle(0)
+Gui.Form.txtBoxNum.Create(TextBox,"",True,170,20,0,13,26,True,0,"Tahoma",8.25,,1)
+Gui.Form.txtBoxNum.Event(GotFocus,txtBoxNum_GotFocus)
+Gui.Form.txtBoxNum.Event(LostFocus,txtBoxNum_LostFocus)
+Gui.Form.txtBoxNum.Event(KeyPressEnter,txtBoxNum_KeyPressEnter)
+Gui.Form.cmdBoxNum.Create(Button)
+Gui.Form.cmdBoxNum.Enabled(True)
+Gui.Form.cmdBoxNum.Visible(True)
+Gui.Form.cmdBoxNum.Zorder(0)
+Gui.Form.cmdBoxNum.Size(31,23)
+Gui.Form.cmdBoxNum.Position(190,24)
+Gui.Form.cmdBoxNum.Caption("^")
+Gui.Form.cmdBoxNum.FontName("Tahoma")
+Gui.Form.cmdBoxNum.FontSize(8.25)
+Gui.Form.cmdBoxNum.Event(Click,cmdBoxNum_Click)
+Gui.Form.lblBoxP.Create(Label,"Box Printer",True,53,13,0,14,93,True,0,"Tahoma",8.25,,0,0)
+Gui.Form.lblBoxP.BorderStyle(0)
+Gui.Form.ddlPrinter2.Create(DropDownList)
+Gui.Form.ddlPrinter2.Enabled(True)
+Gui.Form.ddlPrinter2.Visible(True)
+Gui.Form.ddlPrinter2.Zorder(0)
+Gui.Form.ddlPrinter2.Size(170,20)
+Gui.Form.ddlPrinter2.Position(13,110)
+Gui.Form.ddlPrinter2.FontName("Tahoma")
+Gui.Form.ddlPrinter2.FontSize(8.25)
+Gui.Form.cmdBoxLabel.Create(Button)
+Gui.Form.cmdBoxLabel.Enabled(True)
+Gui.Form.cmdBoxLabel.Visible(True)
+Gui.Form.cmdBoxLabel.Zorder(0)
+Gui.Form.cmdBoxLabel.Size(135,50)
+Gui.Form.cmdBoxLabel.Position(877,635)
+Gui.Form.cmdBoxLabel.Anchor(14)
+Gui.Form.cmdBoxLabel.Caption("Reprint Box Label")
+Gui.Form.cmdBoxLabel.FontName("Tahoma")
+Gui.Form.cmdBoxLabel.FontSize(8.25)
+Gui.Form.cmdBoxLabel.FontStyle(True,False,False,False,False)
+Gui.Form.cmdBoxLabel.Event(Click,cmdBoxLabel_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.iIndex.Declare(Long,0)
+V.Global.iSerialRpt.Declare(Long,0)
+V.Global.iBoxRpt.Declare(Long,0)
+V.Global.sPic.Declare(String,"")
+V.Global.sBoxof.Declare(String,"")
+V.Global.sFirst.Declare(String,"")
+V.Global.sLast.Declare(String,"")
+V.Global.sPlateLabel.Declare(String,"")
+V.Global.sBoxLabel.Declare(String,"")
+V.Global.sJob.Declare(String,"")
+V.Global.sSuffix.Declare(String,"")
+'Program.External.Include.Library("2003.lib")
+Program.Sub.Preflight.End
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Function.Intrinsic.UI.UsePixels ' Allows you to use Pixels instead of Twips throughout
+
+F.Intrinsic.Control.CallSub(Build_Empty_DT)
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+Gui.Form..Show
+
+Gui.Form..AlwaysOnTop(True)
+Gui.Form..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_WIPTOFG.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.Form_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("Form_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.iRet.Declare(Long,0)
+
+F.Intrinsic.Control.Try
+	F.Intrinsic.Control.If(V.ODBC.Con.State,=,1)
+		F.Intrinsic.Control.If(V.DataTable.Lock.Exists)
+			F.Intrinsic.Control.If(V.DataTable.Lock.RowCount--,<>,-1)
+				F.Intrinsic.String.Build("Delete From GCG_6211_Lock_File Where Rec_Key = '{0}'",V.DataTable.Lock(V.DataTable.Lock.RowCount--).Rec_Key!FieldValTrim,V.Local.sSql)
+				F.ODBC.Connection!Con.Execute(V.Local.sSql)
+			F.Intrinsic.Control.EndIf
+			F.Data.DataTable.DeleteRow("Lock")
+			F.Data.DataTable.Close("Lock")
+		F.Intrinsic.Control.EndIf
+		F.ODBC.Connection!Con.Close	
+	F.Intrinsic.Control.Else
+		F.ODBC.Connection!Con.OpenCompanyConnection
+		F.Intrinsic.Control.If(V.DataTable.Lock.Exists)
+			F.Intrinsic.Control.If(V.DataTable.Lock.RowCount--,<>,-1)
+				F.Intrinsic.String.Build("Delete From GCG_6211_Lock_File Where Rec_Key = '{0}'",V.DataTable.Lock(V.DataTable.Lock.RowCount--).Rec_Key!FieldValTrim,V.Local.sSql)
+				F.ODBC.Connection!Con.Execute(V.Local.sSql)
+			F.Intrinsic.Control.EndIf
+			F.Data.DataTable.DeleteRow("Lock")
+			F.Data.DataTable.Close("Lock")
+		F.Intrinsic.Control.EndIf
+		F.ODBC.Connection!Con.Close	
+	F.Intrinsic.Control.EndIf	
+F.Intrinsic.Control.Catch
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	F.Intrinsic.Control.If(V.DataTable.Lock.Exists)
+		F.Intrinsic.Control.If(V.DataTable.Lock.RowCount--,<>,-1)
+			F.Intrinsic.String.Build("Delete From GCG_6211_Lock_File Where Rec_Key = '{0}'",V.DataTable.Lock(V.DataTable.Lock.RowCount--).Rec_Key!FieldValTrim,V.Local.sSql)
+			F.ODBC.Connection!Con.Execute(V.Local.sSql)
+		F.Intrinsic.Control.EndIf
+		F.Data.DataTable.DeleteRow("Lock")
+		F.Data.DataTable.Close("Lock")
+	F.Intrinsic.Control.EndIf
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndTry
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Form_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Form_UnLoad.End
+
+Program.Sub.Build_Empty_DT.Start
+F.Intrinsic.Control.SetErrorHandler("Build_Empty_DT_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+
+F.Intrinsic.Control.If(V.Caller.GlobalDir.Right1,=,"\")
+	F.Intrinsic.String.Build("{0}ART\GAB_GSS_Logo_Green_Dash.png",V.Caller.GlobalDir,V.Global.sPic)
+	F.Intrinsic.String.Build("{0}BUSINT\LABELS\Custom\GCG_6211_Serial.lab",V.Caller.GlobalDir,V.Global.sPlateLabel)
+	F.Intrinsic.String.Build("{0}BUSINT\LABELS\Custom\GCG_6211_BoxNum.lab",V.Caller.GlobalDir,V.Global.sBoxLabel)
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Build("{0}\ART\GAB_GSS_Logo_Green_Dash.png",V.Caller.GlobalDir,V.Global.sPic)
+	F.Intrinsic.String.Build("{0}\BUSINT\LABELS\Custom\GCG_6211_Serial.lab",V.Caller.GlobalDir,V.Global.sPlateLabel)
+	F.Intrinsic.String.Build("{0}\BUSINT\LABELS\Custom\GCG_6211_BoxNum.lab",V.Caller.GlobalDir,V.Global.sBoxLabel)
+F.Intrinsic.Control.EndIf
+
+Gui.Form.pic1.Picture(V.Global.sPic)
+
+F.Global.BI.GetIDFromName("GCG_6211_Serial.lab",V.Global.iSerialRpt)
+F.Global.BI.GetIDFromName("GCG_6211_BoxNum.lab",V.Global.iBoxRpt)
+
+F.Data.DataTable.Create("LabelSerial",True)
+
+F.Data.DataTable.AddColumn("LabelSerial","Serial",String)
+
+F.Data.DataTable.Create("LabelBox",True)
+
+F.Data.DataTable.AddColumn("LabelBox","BoxNum",String)
+F.Data.DataTable.AddColumn("LabelBox","PONum",String)
+F.Data.DataTable.AddColumn("LabelBox","PlateType",String)
+F.Data.DataTable.AddColumn("LabelBox","First",String)
+F.Data.DataTable.AddColumn("LabelBox","Last",String)
+F.Data.DataTable.AddColumn("LabelBox","Boxof",String)
+
+F.Data.DataTable.Create("Serial",True)
+
+F.Data.DataTable.AddColumn("Serial","Part",String)
+F.Data.DataTable.AddColumn("Serial","Lot",String)
+F.Data.DataTable.AddColumn("Serial","Bin",String)
+F.Data.DataTable.AddColumn("Serial","Heat",String)
+F.Data.DataTable.AddColumn("Serial","Serial",String)
+F.Data.DataTable.AddColumn("Serial","Qty",Long)
+F.Data.DataTable.AddColumn("Serial","Print_Label",String)
+
+F.ODBC.Connection!ConC.OpenCommonConnection
+
+'creating datatable for sentinel enabled printers
+V.Local.sSql.Set("Select PrinterName, rtrim(Sentinelalias) From Server_Printers Where Sentinelenabled = 1 Order By Sentinelalias")
+F.Data.Dictionary.CreateFromSQL("Printer","ConC",V.Local.sSql)
+
+Gui.Form.ddlPrinter.AddItem(" ",0)
+Gui.Form.ddlPrinter.AddItems("Dictionary","Printer")
+
+Gui.Form.ddlPrinter2.AddItem(" ",0)
+Gui.Form.ddlPrinter2.AddItems("Dictionary","Printer")
+
+F.ODBC.Connection!ConC.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Build_Empty_DT_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_WIPTOFG.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Build_Empty_DT.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.Form.GsGridWIP.AddGridviewFromDatatable("GSerial","Serial")
+Gui.Form.GsGridWIP.SetGridviewProperty("GSerial","Editable",False)
+Gui.Form.GsGridWIP.SetGridviewProperty("GSerial","ReadOnly",True)
+
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Part","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Lot","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Bin","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Heat","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Serial","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Qty","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Print_Label","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Part","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Lot","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Bin","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Heat","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Serial","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Qty","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Print_Label","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Part","HeaderFontBold",True)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Lot","HeaderFontBold",True)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Bin","HeaderFontBold",True)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Heat","HeaderFontBold",True)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Serial","HeaderFontBold",True)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Qty","HeaderFontBold",True)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Print_Label","HeaderFontBold",True)
+
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Print_Label","Caption"," ")
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Serial","Caption","Plate")
+
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Lot","Visible",False)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Bin","Visible",False)
+Gui.Form.GsGridWIP.SetColumnProperty("GSerial","Heat","Visible",False)
+
+Gui.Form.GsGridWIP.ColumnEdit("GSerial","Print_Label","EditorButton","Print Label")
+
+Gui.Form.GsGridWIP.MainView("GSerial")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_WIPTOFG.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.cmdBad_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdBad_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.Form.cmdGood.Enabled(False)
+Gui.Form.cmdBad.Enabled(False)
+
+F.Intrinsic.Math.Add(V.Global.iIndex,1,V.Global.iIndex)
+
+F.Intrinsic.Control.If(V.Global.iIndex,>,V.DataTable.PlateData.RowCount--)
+	Gui.Form.lblPlate.Caption("No More Plates To Process.")
+F.Intrinsic.Control.Else
+	Gui.Form.lblPlate.Caption(V.DataTable.PlateData(V.Global.iIndex).Plate!FieldValTrim)
+F.Intrinsic.Control.EndIf
+
+Gui.Form.cmdGood.Enabled(True)
+Gui.Form.cmdBad.Enabled(True)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdBad_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_WIPTOFG.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdBad_Click.End
+
+Program.Sub.cmdGood_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdGood_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.iIndex.Declare(Long,0)
+V.Local.sPrinter.Declare(String,"")
+V.Local.iRunID.Declare(Long,0)
+V.Local.iLogID.Declare(Long,0)
+V.Local.sPlateType.Declare(String,"")
+V.Local.sPrinter2.Declare(String,"")
+V.Local.iIndex2.Declare(Long,0)
+V.Local.sPlate.Declare(String,"")
+
+V.Local.sPrinter.Set(V.Screen.Form!ddlPrinter.Value)
+V.Local.sPrinter2.Set(V.Screen.Form!ddlPrinter2.Value)
+
+F.Intrinsic.Control.If(V.Local.sPrinter.Trim,=,"")
+	F.Intrinsic.UI.Msgbox("Select Label Printer..........","Attention")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+V.Local.iIndex.Set(V.Global.iIndex)
+
+F.Intrinsic.Math.Add(V.Global.iIndex,1,V.Local.iIndex2)
+
+Gui.Form.cmdGood.Enabled(False)
+Gui.Form.cmdBad.Enabled(False)
+
+F.Intrinsic.Control.If(V.Global.iIndex,>,V.DataTable.PlateData.RowCount--)
+	Gui.Form.lblPlate.Caption("No More Plates To Process.")
+F.Intrinsic.Control.Else
+	F.Data.DataTable.SetValue("PlateData",V.Local.iIndex,"WIP",True)
+	F.Data.DataTable.AddRow("Serial","Part",V.DataTable.PlateData(V.Local.iIndex).Part!FieldValTrim,"Serial",V.DataTable.PlateData(V.Local.iIndex).Plate!FieldValTrim,"Qty",1)
+	F.Intrinsic.Control.If(V.Local.iIndex2,<=,V.DataTable.PlateData.RowCount--)
+'		F.Intrinsic.String.Replace(V.DataTable.PlateData(V.Local.iIndex2).Plate!FieldValTrim,"//","  ",V.Local.sPlate)
+		Gui.Form.lblPlate.Caption(V.DataTable.PlateData(V.Local.iIndex2).Plate!FieldValTrim)
+	F.Intrinsic.Control.Else
+		Gui.Form.lblPlate.Caption("No More Plates To Process.")
+	F.Intrinsic.Control.EndIf
+	F.Data.DataTable.AddRow("LabelSerial","Serial",V.DataTable.PlateData(V.Local.iIndex).Plate!FieldValTrim)
+	F.Global.BI.PrintCodeSoftLabelFromDatatable(V.Global.iSerialRpt,"1","LabelSerial",v.Local.sPrinter,True,V.Global.sPlateLabel,True)
+	F.Data.DataTable.DeleteRow("LabelSerial")
+	f.Data.DataTable.AcceptChanges("LabelSerial")
+	'print box label
+
+	F.Intrinsic.Control.If(V.DataTable.Serial.RowCount,=,V.DataTable.PlateData.RowCount)
+		V.Local.sPlateType.Set(V.DataTable.PlateData(V.DataTable.PlateData.RowCount--).VehType!FieldValTrim)
+		F.Data.DataTable.AddRow("LabelBox","BoxNum",V.DataTable.PlateData(V.DataTable.PlateData.RowCount--).BoxNum!FieldValTrim,"PONUM",V.DataTable.PlateData(V.DataTable.PlateData.RowCount--).PONum!FieldValTrim,"PlateType",V.Local.sPlateType,"First",V.Global.sFirst,"Last",V.Global.sLast,"Boxof",V.Global.sBoxof)
+
+		F.Global.BI.PrintCodeSoftLabelFromDatatable(V.Global.iBoxRpt,"1","LabelBox",v.Local.sPrinter2,True,V.Global.sBoxLabel,True)
+		F.Data.DataTable.DeleteRow("LabelBox")
+		f.Data.DataTable.AcceptChanges("LabelBox")
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Math.Add(V.Global.iIndex,1,V.Global.iIndex)
+
+Gui.Form.cmdGood.Enabled(True)
+Gui.Form.cmdBad.Enabled(True)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdGood_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_WIPTOFG.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdGood_Click.End
+
+Program.Sub.cmdDoc_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdDoc_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+V.Local.iIdentity.Declare(Long,0)
+V.Local.sJob.Declare(String,"")
+V.Local.sSuffix.Declare(String,"")
+V.Local.sKey.Declare(String,"")
+
+V.Local.sJob.Set(V.Global.sJob)
+V.Local.sSuffix.Set(V.Global.sSuffix)
+
+F.Intrinsic.Control.If(V.Local.sJob.Trim,<>,"")
+	F.Intrinsic.String.Build("{0}{1}",V.Local.sJob,V.Local.sSuffix,V.Local.sRet)
+	F.Intrinsic.String.Build("{0}-{1}",V.Local.sJob,V.Local.sSuffix,V.Local.sKey)
+	
+	F.Global.DocumentControl.GetLinkID(V.Local.sRet,20,V.Local.iIdentity)
+					
+	F.Intrinsic.Control.If(V.Local.iIdentity,=,-1)
+		F.Global.DocumentControl.CreateReference(V.Local.sRet,20,V.Local.iIdentity)
+	F.Intrinsic.Control.EndIf
+	F.Global.DocumentControl.Invoke(V.Local.sRet,20,V.Local.sKey,V.Local.iIdentity)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdDoc_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_WIPTOFG.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdDoc_Click.End
+
+Program.Sub.cmdLookup_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdLookup_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdLookup_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_WIPTOFG.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdLookup_Click.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sJob.Declare(String,"")
+V.Local.sSuffix.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sBox.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.sFilter.Declare(String,"")
+V.Local.sPlate.Declare(String,"")
+
+V.Local.sBox.Set(V.Screen.Form!txtBoxNum.Text)
+V.Local.sJob.Set(V.Global.sJob)
+V.Local.sSuffix.Set(V.Global.sSuffix)
+
+F.Intrinsic.String.Build("Select Part, Serial, Plate, Job, Suffix, BoxNum, PONUM, Col3, Col4, VehType, WIP From GCG_6211_Serial_Data Where Job = '{0}' and If(Suffix is null,'',Suffix) = '{1}' and BoxNum = '{2}' and WIP = 0 Order By Seq",V.Local.sJob,V.Local.sSuffix,V.Local.sBox.Trim,V.Local.sSql)
+
+F.Intrinsic.Control.If(V.DataTable.PlateData.Exists)
+	F.Data.DataTable.Close("PlateData")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.DeleteRow("Serial")
+F.Data.DataTable.AcceptChanges("Serial")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+F.Data.DataTable.CreateFromSQL("PlateData","con",V.Local.sSql,True)
+
+F.Intrinsic.String.Build("Select Top 1 Serial From GCG_6211_Serial_Data Where BoxNum = '{0}' Order by Seq",V.Local.sBox.Trim,V.Local.sSql)
+F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Global.sFirst)
+
+F.Intrinsic.String.Build("Select Top 1 Serial From GCG_6211_Serial_Data Where BoxNum = '{0}' Order by Seq Desc",V.Local.sBox.Trim,V.Local.sSql)
+F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Global.sLast)
+
+V.Global.iIndex.Set(0)
+
+F.Intrinsic.String.Build("Select distinct BoxNum From GCG_6211_Serial_Data Where Job = '{0}' and If(Suffix is null,'',Suffix) = '{1}'",V.Local.sJob,V.Local.sSuffix,V.Local.sBox.Trim,V.Local.sSql)
+F.Intrinsic.Control.If(V.DataTable.Box.Exists)
+	F.Data.DataTable.Close("Box")
+F.Intrinsic.Control.EndIf
+
+F.Data.DataTable.CreateFromSQL("Box","con",V.Local.sSql,True)
+
+F.Intrinsic.String.Build("BoxNum = '{0}'",V.Local.sBox.Trim,V.Local.sFilter)
+
+F.Data.DataView.Create("Box","VBox",22,V.Local.sFilter,"")
+F.Intrinsic.Math.Add(V.DataView.Box!VBox(V.DataView.Box!VBox.RowCount--).DataTableIndex,1,V.Local.i)
+F.Intrinsic.String.Build("Box: {0} of {1}",V.Local.i,V.DataTable.Box.RowCount,V.Global.sBoxof)
+
+F.Data.DataView.Close("Box","VBox")
+F.Data.DataTable.Close("Box")
+
+F.Intrinsic.Control.If(V.DataTable.PlateData.RowCount--,<>,-1)
+'	F.Intrinsic.String.Replace(V.DataTable.PlateData(V.Global.iIndex).Plate!FieldValTrim,"//","  ",V.Local.sPlate)
+	Gui.Form.lblPlate.Caption(V.DataTable.PlateData(V.Global.iIndex).Plate!FieldValTrim)
+F.Intrinsic.Control.Else
+	Gui.Form.lblPlate.Caption("All Plates Have been Processed")
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_WIPTOFG.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.txtBoxNum_GotFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtBoxNum_GotFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.Form.txtBoxNum.SelectAll
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtBoxNum_GotFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_WIPTOFG.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtBoxNum_GotFocus.End
+
+Program.Sub.txtBoxNum_LostFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtBoxNum_LostFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sBox.Declare(String,"")
+V.Local.sJob.Declare(String,"")
+V.Local.sKey.Declare(String,"")
+V.Local.iRet.Declare(Long,0)
+V.Local.sPlateImage.Declare(String,"")
+V.Local.sMgs.Declare(String,"")
+
+V.Local.sBox.Set(V.Screen.Form!txtBoxNum.Text)
+
+F.Intrinsic.Control.If(V.Local.sBox.Trim,<>,"")
+	F.ODBC.Connection!Con.OpenCompanyConnection
+
+	F.Intrinsic.String.Build("Select Top 1 Job, Suffix From GCG_6211_Serial_Data Where BOXNUM = '{0}'",V.Local.sBox.Trim,V.Local.sSql)
+	F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sJob)
+	F.Intrinsic.String.Split(V.Local.sJob,"*!*",V.Local.sJob)
+	V.Local.sJob.RedimPreserve(0,1)
+	V.Global.sJob.Set(V.Local.sJob(0).Trim)
+	V.Global.sSuffix.Set(V.Local.sJob(1).Trim)
+	V.Local.sKey.Set(V.Screen.Form!txtBoxNum.Text)
+	
+	F.Intrinsic.Control.If(V.DataTable.Lock.Exists)
+		F.Intrinsic.Control.If(V.DataTable.Lock.RowCount--,<>,-1)
+			F.Intrinsic.String.Build("Delete From GCG_6211_Lock_File Where Rec_Key = '{0}'",V.DataTable.Lock(V.DataTable.Lock.RowCount--).Rec_Key!FieldValTrim,V.Local.sSql)
+			F.ODBC.Connection!Con.Execute(V.Local.sSql)
+		F.Intrinsic.Control.EndIf
+		F.Data.DataTable.DeleteRow("Lock")
+		F.Data.DataTable.Close("Lock")
+	F.Intrinsic.Control.EndIf
+	
+	F.Intrinsic.String.Build("Select Rec_Key, User_ID, F_Date From GCG_6211_Lock_File Where Rec_Key = '{0}'",V.Local.sKey.Trim,V.Local.sSql)
+	
+	F.Data.DataTable.CreateFromSQL("Lock","con",V.Local.sSql,True)
+	
+	F.Intrinsic.Control.If(V.DataTable.Lock.RowCount--,=,-1)
+		F.Data.DataTable.AddRow("Lock","Rec_Key",V.Local.sKey,"User_ID",V.Caller.User,"F_Date",V.Ambient.Now)
+		F.Data.DataTable.SaveToDB("Lock","con","GCG_6211_Lock_File","",128,"Rec_Key@!@Rec_Key*!*User_ID@!@User_ID*!*F_Date@!@F_Date")
+		F.ODBC.Connection!Con.Close
+		F.Intrinsic.Control.CallSub(Get_Data)
+		F.ODBC.Connection!Con.OpenCompanyConnection
+		F.Intrinsic.String.Build("Select Top 1 PlateImage From GCG_6211_Type_Price A Join GCG_6211_Serial_Data B on A.Part = B.Part and A.OrderType = B.OrderType Where BOXNUM = '{0}'",V.Local.sBox.Trim,V.Local.sSql)
+		F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sPlateImage)
+		F.ODBC.Connection!Con.Close
+		F.Intrinsic.Control.If(V.Local.sPlateImage.Trim,<>,"")
+			F.Intrinsic.Control.Try
+				Gui.Form.pic1.Picture(V.Local.sPlateImage)
+			F.Intrinsic.Control.Catch
+				Gui.Form.pic1.Picture(V.Global.sPic)
+			F.Intrinsic.Control.EndTry
+		F.Intrinsic.Control.Else
+			Gui.Form.pic1.Picture(V.Global.sPic)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Else
+		F.Intrinsic.String.Build("Box Number: {0} is Locked by User {1}, Date Time: {2}",V.DataTable.Lock(V.DataTable.Lock.RowCount--).Rec_Key!FieldValTrim,V.DataTable.Lock(V.DataTable.Lock.RowCount--).User_Id!FieldValTrim,V.DataTable.Lock(V.DataTable.Lock.RowCount--).F_Date!FieldVal,V.Local.sMsg)
+		F.Intrinsic.UI.Msgbox(V.Local.sMgs)
+
+		F.Intrinsic.Control.BlockEvents
+		Gui.Form.txtBoxNum.Text("")
+		V.Global.sJob.Set("")
+	    V.Global.sSuffix.Set("")
+		F.Data.DataTable.Close("Lock")
+		Gui.Form.pic1.Picture(V.Global.sPic)
+		F.Intrinsic.Control.UnBlockEvents
+		F.ODBC.Connection!Con.Close
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtBoxNum_LostFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_WIPTOFG.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtBoxNum_LostFocus.End
+
+Program.Sub.txtBoxNum_KeyPressEnter.Start
+F.Intrinsic.Control.SetErrorHandler("txtBoxNum_KeyPressEnter_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(txtBoxNum_LostFocus)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtBoxNum_KeyPressEnter_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_WIPTOFG.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtBoxNum_KeyPressEnter.End
+
+Program.Sub.cmdBoxNum_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdBoxNum_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sTitles.Declare(String,"")
+V.Local.sWidths.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+
+F.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+
+V.Local.sSql.Set("Select Distinct BoxNum, Job, Suffix From GCG_6211_Serial_Data Where WIP = 0 and Job <> '' Order by Job,Suffix") 
+V.Local.sTitles.Set("Box Number*!*Job*!*Suffix")
+V.Local.sWidths.Set("2500*!*1800*!*1800")
+
+F.Intrinsic.String.Split(V.Local.sTitles,"*!*",V.Local.sTitles)
+F.Intrinsic.String.Split(V.Local.sWidths,"*!*",V.Local.sWidths)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.UI.Browser("Select Box Number","con",V.Local.sSql,V.Local.sTitles,V.Local.sWidths,10200,9000,V.Local.sRet)
+	
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.If(V.Local.sRet,<>,V.Ambient.Cancel)
+	F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+	F.Intrinsic.Control.BlockEvents
+	Gui.Form.txtBoxNum.Text(V.Local.sRet(0).Trim)
+	V.Global.sJob.Set(V.Local.sRet(1).Trim)
+	V.Global.sSuffix.Set(V.Local.sRet(2).Trim)
+	F.Intrinsic.Control.UnBlockEvents
+	F.Intrinsic.Control.CallSub(txtBoxNum_LostFocus)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdBoxNum_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_WIPTOFG.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdBoxNum_Click.End
+
+Program.Sub.GsGridWIP_RowCellClick.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridWIP_RowCellClick_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.iRunID.Declare(Long,0)
+V.Local.iLogID.Declare(Long,0)
+V.Local.sPrinter.Declare(String,"")
+
+V.Local.sPrinter.Set(V.Screen.Form!ddlPrinter.Value)
+
+F.Intrinsic.Control.If(V.Args.Column.UCase,=,"PRINT_LABEL")
+	F.Data.DataTable.AddRow("LabelSerial","Serial",V.DataTable.Serial(V.Args.RowIndex).Serial!FieldValTrim)
+	F.Global.BI.GetRunID(V.Local.iRunID)
+	F.Global.BI.StartLogging(V.Local.iRunID,V.Global.iSerialRpt,-1,"GCG_6211_Serial",V.Local.iLogID)
+	F.Global.BI.StopLogging(V.Local.iLogID)
+	F.Global.BI.PrintCodesoftLabelFromDataTable(V.Local.iRunID,V.Local.iLogID,"LabelSerial",V.Local.sPrinter,False)
+	F.Data.DataTable.DeleteRow("LabelSerial")
+	f.Data.DataTable.AcceptChanges("LabelSerial")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridWIP_RowCellClick_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_WIPTOFG.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridWIP_RowCellClick.End
+
+Program.Sub.cmdBoxLabel_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdBoxLabel_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.iRunID.Declare(Long,0)
+V.Local.iLogID.Declare(Long,0)
+V.Local.sPrinter2.Declare(String,"")
+V.Local.sPlate.Declare(String,"")
+
+V.Local.sPrinter2.Set(V.Screen.Form!ddlPrinter2.Value)
+
+F.Intrinsic.Control.If(V.DataTable.PlateData.Exists)
+	F.Intrinsic.Control.If(V.DataTable.PlateData.RowCount--,<>,-1)
+		V.Local.sPlate.Set(V.DataTable.PlateData(V.DataTable.PlateData.RowCount--).VehType!FieldValTrim)
+		F.Data.DataTable.AddRow("LabelBox","BoxNum",V.DataTable.PlateData(V.DataTable.PlateData.RowCount--).BoxNum!FieldValTrim,"PONUM",V.DataTable.PlateData(V.DataTable.PlateData.RowCount--).PONum!FieldValTrim,"PlateType",V.Local.sPlate,"First",V.Global.sFirst,"Last",V.Global.sLast,"Boxof",V.Global.sBoxof)
+		F.Global.BI.GetRunID(V.Local.iRunID)
+		F.Global.BI.StartLogging(V.Local.iRunID,V.Global.iBoxRpt,-1,"GCG_6211_BoxNumber",V.Local.iLogID)
+		F.Global.BI.StopLogging(V.Local.iLogID)
+		F.Global.BI.PrintCodesoftLabelFromDataTable(V.Local.iRunID,V.Local.iLogID,"LabelBox",V.Local.sPrinter2,False)
+		F.Data.DataTable.DeleteRow("LabelBox")
+		f.Data.DataTable.AcceptChanges("LabelBox")
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdBoxLabel_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_WIPTOFG.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Form_Unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdBoxLabel_Click.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$rking$}$20210208071305267$}$QNdZLVy4bWuiWa9jh1ZTiCjCxrZcr9BSMo80LGRLZdEoZhbTXtTWqNXfEzL9xsYD2wEsHCGGD30=
+Program.Sub.Comments.End
