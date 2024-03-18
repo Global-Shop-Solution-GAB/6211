@@ -1,0 +1,705 @@
+Program.Sub.ScreenSU.Start
+Gui.FormLabelReprint..Create
+Gui.FormLabelReprint..Caption("Label Reprint")
+Gui.FormLabelReprint..Size(15360,10695)
+Gui.FormLabelReprint..MinX(0)
+Gui.FormLabelReprint..MinY(0)
+Gui.FormLabelReprint..Position(0,0)
+Gui.FormLabelReprint..BackColor(-2147483633)
+Gui.FormLabelReprint..MousePointer(0)
+Gui.FormLabelReprint..Event(UnLoad,FormLabelReprint_UnLoad)
+Gui.FormLabelReprint.lblSO.Create(Label,"Sales Order",True,1575,255,0,105,195,True,0,"Arial",8,-2147483633,0)
+Gui.FormLabelReprint.txtSO.Create(TextBox,"",True,1530,300,0,105,435,True,0,"Arial",8,-2147483643,1)
+Gui.FormLabelReprint.txtSO.Event(GotFocus,txtSO_GotFocus)
+Gui.FormLabelReprint.txtSO.Event(LostFocus,txtSO_LostFocus)
+Gui.FormLabelReprint.txtSO.Event(KeyPressEnter,txtSO_KeyPressEnter)
+Gui.FormLabelReprint.cmdSO.Create(Button)
+Gui.FormLabelReprint.cmdSO.Size(420,375)
+Gui.FormLabelReprint.cmdSO.Position(1740,390)
+Gui.FormLabelReprint.cmdSO.Caption("^")
+Gui.FormLabelReprint.cmdSO.Event(Click,cmdSO_Click)
+Gui.FormLabelReprint.lblPlate.Create(Label,"Reprint Plate Label",True,1935,255,0,105,1020,True,0,"Arial",8,-2147483633,0)
+Gui.FormLabelReprint.GsGridPlate.Create(GsGridControl)
+Gui.FormLabelReprint.GsGridPlate.Size(3810,8790)
+Gui.FormLabelReprint.GsGridPlate.Position(105,1275)
+Gui.FormLabelReprint.GsGridPlate.Event(RowCellClick,GsGridPlate_RowCellClick)
+Gui.FormLabelReprint.lblPallet.Create(Label,"Reprint Pallet Label",True,1935,255,0,4080,1020,True,0,"Arial",8,-2147483633,0)
+Gui.FormLabelReprint.GsGridPallet.Create(GsGridControl)
+Gui.FormLabelReprint.GsGridPallet.Size(11085,2775)
+Gui.FormLabelReprint.GsGridPallet.Position(4080,1275)
+Gui.FormLabelReprint.GsGridPallet.Anchor(15)
+Gui.FormLabelReprint.GsGridPallet.Event(RowCellClick,GsGridPallet_RowCellClick)
+Gui.FormLabelReprint.lblBox.Create(Label,"Reprint Box Label",True,1935,255,0,4080,4230,True,0,"Arial",8,-2147483633,0)
+Gui.FormLabelReprint.GsGridBox.Create(GsGridControl)
+Gui.FormLabelReprint.GsGridBox.Size(11085,5595)
+Gui.FormLabelReprint.GsGridBox.Position(4080,4470)
+Gui.FormLabelReprint.GsGridBox.Anchor(15)
+Gui.FormLabelReprint.GsGridBox.Event(RowCellClick,GsGridBox_RowCellClick)
+Gui.FormLabelReprint.lblPrinter.Create(Label,"Label Printer",True,1935,255,0,12615,195,True,0,"Arial",8,-2147483633,0)
+Gui.FormLabelReprint.ddlPrinter.Create(DropDownList)
+Gui.FormLabelReprint.ddlPrinter.Size(2550,330)
+Gui.FormLabelReprint.ddlPrinter.Position(12615,435)
+Gui.FormLabelReprint.lblBoxNum.Create(Label,"Box Number",True,1935,255,0,2460,180,True,0,"Arial",8,-2147483633,0)
+Gui.FormLabelReprint.txtBoxNum.Create(TextBox,"",True,2430,300,0,2460,435,True,0,"Arial",8,-2147483643,1)
+Gui.FormLabelReprint.txtBoxNum.Event(GotFocus,txtBoxNum_GotFocus)
+Gui.FormLabelReprint.txtBoxNum.Event(LostFocus,txtBoxNum_LostFocus)
+Gui.FormLabelReprint.txtBoxNum.Event(KeyPressEnter,txtBoxNum_KeyPressEnter)
+Gui.FormLabelReprint.cmdBoxNum.Create(Button)
+Gui.FormLabelReprint.cmdBoxNum.Size(420,375)
+Gui.FormLabelReprint.cmdBoxNum.Position(5010,390)
+Gui.FormLabelReprint.cmdBoxNum.Caption("^")
+Gui.FormLabelReprint.cmdBoxNum.Event(Click,cmdBoxNum_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.iPalletRpt.Declare(Long,0)
+V.Global.iSerialRpt.Declare(Long,0)
+V.Global.iBoxRpt.Declare(Long,0)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(Build_Empty_DT)
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+Gui.FormLabelReprint..Show
+Gui.FormLabelReprint..AlwaysOnTop(True)
+Gui.FormLabelReprint..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_Label_Reprint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormLabelReprint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.GsGridPlate_RowCellClick.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridPlate_RowCellClick_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.iRunID.Declare(Long,0)
+V.Local.iLogID.Declare(Long,0)
+V.Local.sPrinter.Declare(STring,"")
+
+V.Local.sPrinter.Set(V.Screen.FormLabelReprint!ddlPrinter.Value)
+
+F.Intrinsic.Control.If(V.Args.Column.UCase,=,"PRINT_LABEL")
+	F.Data.DataTable.AddRow("PlateLabel","Serial",V.DataTable.Plate(V.Args.RowIndex).Serial!FieldValTrim)
+	
+	F.Global.BI.GetRunID(V.Local.iRunID)
+	F.Global.BI.StartLogging(V.Local.iRunID,V.Global.iSerialRpt,-1,"GCG_6211_Serial",V.Local.iLogID)
+	F.Global.BI.StopLogging(V.Local.iLogID)
+	F.Global.BI.PrintCodesoftLabelFromDataTable(V.Local.iRunID,V.Local.iLogID,"PlateLabel",V.Local.sPrinter,False)
+	F.Data.DataTable.DeleteRow("PlateLabel")
+	f.Data.DataTable.AcceptChanges("PlateLabel")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridPlate_RowCellClick_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_Label_Reprint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormLabelReprint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridPlate_RowCellClick.End
+
+Program.Sub.GsGridPallet_RowCellClick.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridPallet_RowCellClick_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.iRunID.Declare(Long,0)
+V.Local.iLogID.Declare(Long,0)
+V.Local.sPrinter.Declare(STring,"")
+V.Local.iRet.Declare(Long,0)
+V.Local.sParams.Declare(String,"")
+V.Local.sValues.Declare(String,"")
+
+V.Local.sPrinter.Set(V.Screen.FormLabelReprint!ddlPrinter.Value)
+
+F.Intrinsic.Control.If(V.Args.Column.UCase,=,"PRINT_LABEL")
+'	F.Data.DataTable.AddRow("PalletLabel","FirstBox",V.DataTable.Pallet(V.Args.RowIndex).FirstBox!FieldValTrim,"LastBox",V.DataTable.Pallet(V.Args.RowIndex).LastBox!FieldValTrim,"NumOfBox",V.DataTable.Pallet(V.Args.RowIndex).NumOfBox!FieldVal,"OrderType",V.DataTable.Pallet(V.Args.RowIndex).OrderType!FieldValTrim,"PONum",V.DataTable.Pallet(V.Args.RowIndex).PONum!FieldValTrim,"Pallet",V.DataTable.Pallet(V.Args.RowIndex).Pallet!FieldValTrim,"PlateType",V.DataTable.Pallet(V.Args.RowIndex).PlateType!FieldValTrim)
+'	
+	F.Global.BI.GetRunID(V.Local.iRunID)
+	F.Global.BI.StartLogging(V.Local.iRunID,V.Global.iPalletRpt,-1,"GCG_6211_Pallet",V.Local.iLogID)
+	F.Global.BI.StopLogging(V.Local.iLogID)
+'	F.Global.BI.PrintCodesoftLabelFromDataTable(V.Local.iRunID,V.Local.iLogID,"PalletLabel",V.Local.sPrinter,False)
+'	F.Data.DataTable.DeleteRow("PalletLabel")
+'	f.Data.DataTable.AcceptChanges("PalletLabel")
+	V.Local.sParams.Set("Pallet*!*OrderNO")
+	F.Intrinsic.String.Build("{0}*!*{1}",V.DataTable.Pallet(V.Args.RowIndex).FirstBox!FieldValTrim,V.Screen.FormLabelReprint!txtSO.Text,V.Local.sValues)
+	F.Global.BI.RunReportPreProcessor(V.Local.iRunID,V.Local.iLogID,V.Local.sParams,V.Local.sValues,"",-1,False,"",-1,"",-1,"","",V.Local.iRet)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridPallet_RowCellClick_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_Label_Reprint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormLabelReprint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridPallet_RowCellClick.End
+
+Program.Sub.GsGridBox_RowCellClick.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridBox_RowCellClick_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.iRunID.Declare(Long,0)
+V.Local.iLogID.Declare(Long,0)
+V.Local.sPrinter.Declare(STring,"")
+
+V.Local.sPrinter.Set(V.Screen.FormLabelReprint!ddlPrinter.Value)
+
+F.Intrinsic.Control.If(V.Args.Column.UCase,=,"PRINT_LABEL")
+	F.Data.DataTable.AddRow("BoxLabel","BoxNum",V.DataTable.Box(V.Args.RowIndex).BoxNum!FieldValTrim,"PONUM",V.DataTable.Box(V.Args.RowIndex).PONum!FieldValTrim,"PlateType",V.DataTable.Box(V.Args.RowIndex).PlateType!FieldValTrim,"First",V.DataTable.Box(V.Args.RowIndex).First!FieldValTrim,"Last",V.DataTable.Box(V.Args.RowIndex).Last!FieldValTrim,"Boxof",V.DataTable.Box(V.Args.RowIndex).Boxof!FieldValTrim)
+	
+	F.Global.BI.GetRunID(V.Local.iRunID)
+	F.Global.BI.StartLogging(V.Local.iRunID,V.Global.iBoxRpt,-1,"GCG_6211_BoxNum",V.Local.iLogID)
+	F.Global.BI.StopLogging(V.Local.iLogID)
+	F.Global.BI.PrintCodesoftLabelFromDataTable(V.Local.iRunID,V.Local.iLogID,"BoxLabel",V.Local.sPrinter,False)
+	F.Data.DataTable.DeleteRow("BoxLabel")
+	f.Data.DataTable.AcceptChanges("BoxLabel")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridBox_RowCellClick_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_Label_Reprint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormLabelReprint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridBox_RowCellClick.End
+
+Program.Sub.FormLabelReprint_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormLabelReprint_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.ODBC.Con.State,=,1)
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormLabelReprint_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormLabelReprint_UnLoad.End
+
+Program.Sub.txtSO_LostFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtSO_LostFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSO.Declare(String,"")
+
+V.Local.sSO.Set(V.Screen.FormLabelReprint!txtSO.Text)
+
+F.Intrinsic.Control.If(V.Local.sSO.Trim,<>,"")
+	F.Intrinsic.Control.CallSub(Get_Data,"SO","Y")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtSO_LostFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_Label_Reprint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormLabelReprint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtSO_LostFocus.End
+
+Program.Sub.txtSO_GotFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtSO_GotFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormLabelReprint.txtSO.SelectAll
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtSO_GotFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_Label_Reprint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormLabelReprint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtSO_GotFocus.End
+
+Program.Sub.txtSO_KeyPressEnter.Start
+F.Intrinsic.Control.SetErrorHandler("txtSO_KeyPressEnter_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(txtSO_LostFocus)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtSO_KeyPressEnter_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_Label_Reprint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormLabelReprint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtSO_KeyPressEnter.End
+
+Program.Sub.cmdSO_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdSO_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sTitles.Declare(String,"")
+V.Local.sWidths.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+
+F.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+
+V.Local.sSql.Set("Select Distinct Order_No, Job, Suffix, PONUM From GCG_6211_Serial_Data Where WIP = 0 and Job <> '' Order by Job,Suffix") 
+V.Local.sTitles.Set("Sales Order*!*Job*!*Suffix*!*Customer PO")
+V.Local.sWidths.Set("1800*!*1800*!*1800*!*2500")
+
+F.Intrinsic.String.Split(V.Local.sTitles,"*!*",V.Local.sTitles)
+F.Intrinsic.String.Split(V.Local.sWidths,"*!*",V.Local.sWidths)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.UI.Browser("Select Sales Order","con",V.Local.sSql,V.Local.sTitles,V.Local.sWidths,10200,9000,V.Local.sRet)
+	
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.If(V.Local.sRet,<>,V.Ambient.Cancel)
+	F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+	F.Intrinsic.Control.BlockEvents
+	Gui.FormLabelReprint.txtSO.Text(v.Local.sRet.Trim)
+	F.Intrinsic.Control.UnBlockEvents
+	F.Intrinsic.Control.CallSub(txtSO_LostFocus)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdSO_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_Label_Reprint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormLabelReprint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdSO_Click.End
+
+Program.Sub.Build_Empty_DT.Start
+F.Intrinsic.Control.SetErrorHandler("Build_Empty_DT_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+
+F.ODBC.Connection!ConC.OpenCommonConnection
+
+V.Local.sSql.Set("Select PrinterName, rtrim(Sentinelalias) From Server_Printers Where Sentinelenabled = 1 Order By Sentinelalias")
+F.Data.Dictionary.CreateFromSQL("Printer","ConC",V.Local.sSql)
+
+Gui.FormLabelReprint.ddlPrinter.AddItem(" ",0)
+Gui.FormLabelReprint.ddlPrinter.AddItems("Dictionary","Printer")
+
+F.ODBC.Connection!ConC.Close
+
+F.Global.BI.GetIDFromName("GCG_6211_Serial.lab",V.Global.iSerialRpt)
+F.Global.BI.GetIDFromName("GCG_6211_BoxNum.lab",V.Global.iBoxRpt)
+F.Global.BI.GetIDFromName("GCG_6211_Pallet.rpt",V.Global.iPalletRpt)
+
+F.Data.DataTable.Create("Plate",True)
+F.Data.DataTable.AddColumn("Plate","Serial",String)
+F.Data.DataTable.AddColumn("Plate","Print_Label",String)
+
+F.Data.DataTable.Create("PlateLabel",True)
+F.Data.DataTable.AddColumn("PlateLabel","Serial",String)
+
+F.Data.DataTable.Create("Box",True)
+F.Data.DataTable.AddColumn("Box","BoxNum",String)
+F.Data.DataTable.AddColumn("Box","PONUM",String)
+F.Data.DataTable.AddColumn("Box","PlateType",String)
+F.Data.DataTable.AddColumn("Box","First",String)
+F.Data.DataTable.AddColumn("Box","Last",String)
+F.Data.DataTable.AddColumn("Box","Boxof",String)
+F.Data.DataTable.AddColumn("Box","Print_Label",String)
+
+F.Data.DataTable.Create("BoxLabel",True)
+F.Data.DataTable.AddColumn("BoxLabel","BoxNum",String)
+F.Data.DataTable.AddColumn("BoxLabel","PONUM",String)
+F.Data.DataTable.AddColumn("BoxLabel","PlateType",String)
+F.Data.DataTable.AddColumn("BoxLabel","First",String)
+F.Data.DataTable.AddColumn("BoxLabel","Last",String)
+F.Data.DataTable.AddColumn("BoxLabel","Boxof",String)
+
+F.Data.DataTable.Create("Pallet",True)
+F.Data.DataTable.AddColumn("Pallet","Pallet",String)
+F.Data.DataTable.AddColumn("Pallet","FirstBox",String)
+F.Data.DataTable.AddColumn("Pallet","LastBox",String)
+F.Data.DataTable.AddColumn("Pallet","NumOfBox",String)
+F.Data.DataTable.AddColumn("Pallet","OrderType",String)
+F.Data.DataTable.AddColumn("Pallet","PONum",String)
+F.Data.DataTable.AddColumn("Pallet","PlateType",String)
+F.Data.DataTable.AddColumn("Pallet","Print_Label",String)
+
+F.Data.DataTable.Create("PalletLabel",True)
+F.Data.DataTable.AddColumn("PalletLabel","FirstBox",String)
+F.Data.DataTable.AddColumn("PalletLabel","LastBox",String)
+F.Data.DataTable.AddColumn("PalletLabel","NumOfBox",String)
+F.Data.DataTable.AddColumn("PalletLabel","OrderType",String)
+F.Data.DataTable.AddColumn("PalletLabel","PONum",String)
+F.Data.DataTable.AddColumn("PalletLabel","Pallet",String)
+F.Data.DataTable.AddColumn("PalletLabel","PlateType",String)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Build_Empty_DT_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_Label_Reprint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormLabelReprint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Build_Empty_DT.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormLabelReprint.GsGridPlate.AddGridviewFromDatatable("GPlate","Plate")
+Gui.FormLabelReprint.GsGridPlate.SetGridviewProperty("GPlate","ReadOnly",True)
+Gui.FormLabelReprint.GsGridPlate.SetGridviewProperty("GPlate","Editable",False)
+
+Gui.FormLabelReprint.GsGridPlate.ColumnEdit("GPlate","Print_Label","EditorButton","Print Label")
+
+Gui.FormLabelReprint.GsGridPlate.SetColumnProperty("GPlate","Serial","Caption","Plate #")
+Gui.FormLabelReprint.GsGridPlate.SetColumnProperty("GPlate","Print_Label","Caption"," ")
+
+Gui.FormLabelReprint.GsGridPlate.SetColumnProperty("GPlate","Serial","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormLabelReprint.GsGridPlate.SetColumnProperty("GPlate","Print_Label","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+
+Gui.FormLabelReprint.GsGridPlate.SetColumnProperty("GPlate","Serial","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormLabelReprint.GsGridPlate.SetColumnProperty("GPlate","Print_Label","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+
+Gui.FormLabelReprint.GsGridPlate.SetColumnProperty("GPlate","Serial","HeaderFontBold",True)
+Gui.FormLabelReprint.GsGridPlate.SetColumnProperty("GPlate","Print_Label","HeaderFontBold",True)
+
+Gui.FormLabelReprint.GsGridPlate.MainView("GPlate")
+
+Gui.FormLabelReprint.GsGridBox.AddGridviewFromDatatable("GBox","Box")
+Gui.FormLabelReprint.GsGridBox.SetGridviewProperty("GBox","ReadOnly",True)
+Gui.FormLabelReprint.GsGridBox.SetGridviewProperty("GBox","Editable",False)
+
+Gui.FormLabelReprint.GsGridBox.ColumnEdit("GBox","Print_Label","EditorButton","Print Label")
+
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","BoxNum","Caption","Box #")
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","PONum","Caption","Customer PO")
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","PlateType","Caption","Plate Type")
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","First","Caption","First")
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","Last","Caption","Last")
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","Boxof","Caption","Box of")
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","Print_Label","Caption"," ")
+
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","Boxof","Visible",False)
+
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","BoxNum","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","PONum","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","PlateType","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","First","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","Last","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","Boxof","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","Print_Label","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","BoxNum","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","PONum","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","PlateType","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","First","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","Last","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","Boxof","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","Print_Label","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","BoxNum","HeaderFontBold",True)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","PONum","HeaderFontBold",True)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","PlateType","HeaderFontBold",True)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","First","HeaderFontBold",True)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","Last","HeaderFontBold",True)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","Boxof","HeaderFontBold",True)
+Gui.FormLabelReprint.GsGridBox.SetColumnProperty("GBox","Print_Label","HeaderFontBold",True)
+
+Gui.FormLabelReprint.GsGridBox.MainView("GBox")
+
+Gui.FormLabelReprint.GsGridPallet.AddGridviewFromDatatable("GPallet","Pallet")
+Gui.FormLabelReprint.GsGridPallet.SetGridviewProperty("GPallet","ReadOnly",True)
+Gui.FormLabelReprint.GsGridPallet.SetGridviewProperty("GPallet","Editable",False)
+
+Gui.FormLabelReprint.GsGridPallet.ColumnEdit("GPallet","Print_Label","EditorButton","Print Label")
+
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","Pallet","Caption","Pallet #")
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","FirstBox","Caption","First Box")
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","LastBox","Caption","Last Box")
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","NumOfBox","Caption","Num Of Boxs")
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","OrderType","Caption","Order Type")
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","PONum","Caption","Customer PO")
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","PlateType","Caption","Plate Type")
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","Print_Label","Caption"," ")
+
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","Pallet","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","FirstBox","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","LastBox","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","NumOfBox","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","OrderType","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","PONum","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","PlateType","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","Print_Label","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","Pallet","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","FirstBox","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","LastBox","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","NumOfBox","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","OrderType","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","PONum","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","PlateType","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","Print_Label","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","Pallet","HeaderFontBold",True)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","FirstBox","HeaderFontBold",True)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","LastBox","HeaderFontBold",True)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","NumOfBox","HeaderFontBold",True)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","OrderType","HeaderFontBold",True)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","PONum","HeaderFontBold",True)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","PlateType","HeaderFontBold",True)
+Gui.FormLabelReprint.GsGridPallet.SetColumnProperty("GPallet","Print_Label","HeaderFontBold",True)
+
+Gui.FormLabelReprint.GsGridPallet.MainView("GPallet")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_Label_Reprint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormLabelReprint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSO.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sFilter.Declare(STring,"")
+V.Local.i.Declare(Long,0)
+V.Local.sFirst.Declare(String,"")
+V.Local.sLast.Declare(String,"")
+V.Local.sBoxOf.Declare(String,"")
+V.Local.iBox.Declare(Long,0)
+V.Local.bSO.Declare(Boolean,False)
+V.Local.bBox.Declare(Boolean,False)
+V.Local.sBox.Declare(String,"")
+
+F.Intrinsic.Variable.ArgExists("SO",V.Local.bSO)
+F.Intrinsic.Variable.ArgExists("Box",V.Local.bBox)
+
+F.Intrinsic.Control.If(V.Local.bSO)
+	V.Local.sSO.Set(V.Screen.FormLabelReprint!txtSO.Text)
+
+	F.Intrinsic.String.Build("Select rtrim(PalletNum) as Pallet, rtrim(Serial) as Serial, rtrim(BoxNum) as BoxNum, rtrim(PONum) as PONUM, rtrim(VehType) as PlateType, rtrim(OrderType) as OrderType From GCG_6211_Serial_Data Where Order_No = '{0}'",V.Local.sSO.Trim,V.Local.sSql)
+F.Intrinsic.Control.Else
+	F.Intrinsic.Control.If(V.Local.bBox)
+		V.Local.sBox.Set(V.Screen.FormLabelReprint!txtBoxNum.Text)
+
+		F.Intrinsic.String.Build("Select rtrim(PalletNum) as Pallet, rtrim(Serial) as Serial, rtrim(BoxNum) as BoxNum, rtrim(PONum) as PONUM, rtrim(VehType) as PlateType, rtrim(OrderType) as OrderType From GCG_6211_Serial_Data Where BoxNum = '{0}'",V.Local.sBox.Trim,V.Local.sSql)
+	F.Intrinsic.Control.Else	
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.DataTable.CreateFromSQL("Temp","con",V.Local.sSql,True)
+
+F.Data.DataView.Create("Temp","VTemp",22,"","")
+
+F.Data.DataView.ToDataTableDistinct("Temp","VTemp","STemp","Serial",True)
+
+F.Data.DataTable.DeleteRow("Plate")
+F.Data.DataTable.AcceptChanges("Plate")
+
+F.Data.DataTable.Merge("STemp","Plate",False,2)
+
+F.Data.DataTable.Close("STemp")
+
+F.Data.DataView.ToDataTableDistinct("Temp","VTemp","BTemp","BOXNUM*!*PONUM*!*PlateType",True)
+F.Data.DataTable.AddColumn("BTemp","First",String)
+F.Data.DataTable.AddColumn("BTemp","Last",String)
+F.Data.DataTable.AddColumn("BTemp","Boxof",String)
+
+F.Data.DataView.ToDataTableDistinct("Temp","VTemp","PTemp","Pallet*!*PONUM*!*PlateType*!*OrderType",True)
+F.Data.DataTable.AddColumn("PTemp","FirstBox",String)
+F.Data.DataTable.AddColumn("PTemp","LastBox",String)
+F.Data.DataTable.AddColumn("PTemp","NumOfBox",String)
+
+F.Data.DataTable.DeleteRow("Box")
+F.Data.DataTable.AcceptChanges("Box")
+
+F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.BTemp.RowCount--,1)
+	F.Intrinsic.Math.Add(V.Local.i,1,V.Local.iBox)
+	F.Intrinsic.String.Build("BoxNum = '{0}'",V.DataTable.BTemp(v.Local.i).BoxNum!FieldValTrim,V.Local.sFilter)
+	F.Data.DataView.SetFilter("Temp","VTemp",V.Local.sFilter)
+	V.Local.sFirst.Set(V.DataView.Temp!VTemp(0).Serial!FieldValTrim)
+	V.Local.sLast.Set(V.DataView.Temp!VTemp(V.DataView.Temp!VTemp.RowCount--).Serial!FieldValTrim)
+	F.Intrinsic.String.Build("Box: {0} of {1}",V.Local.iBox,V.DataTable.BTemp.RowCount,V.Local.sBoxOf)
+	F.Data.DataTable.AddRow("Box","BoxNum",V.DataTable.BTemp(v.Local.i).BoxNum!FieldValTrim,"PONum",V.DataTable.BTemp(v.Local.i).PONum!FieldValTrim,"PlateType",V.DataTable.BTemp(v.Local.i).PlateType!FieldValTrim,"First",V.Local.sFirst,"Last",V.Local.sLast,"Boxof",V.Local.sBoxOf)
+F.Intrinsic.Control.Next(V.Local.i)
+
+F.Data.DataTable.DeleteRow("Pallet")
+F.Data.DataTable.AcceptChanges("Pallet")
+
+F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.PTemp.RowCount--,1)
+	F.Intrinsic.Control.If(V.DataTable.PTemp(v.Local.i).Pallet!FieldValTrim,<>,"")
+		F.Intrinsic.Math.Add(V.Local.i,1,V.Local.iBox)
+		F.Intrinsic.String.Build("Pallet = '{0}'",V.DataTable.PTemp(v.Local.i).Pallet!FieldValTrim,V.Local.sFilter)
+		F.Data.DataView.SetFilter("Temp","VTemp",V.Local.sFilter)
+		V.Local.sFirst.Set(V.DataView.Temp!VTemp(0).BoxNum!FieldValTrim)
+		V.Local.sLast.Set(V.DataView.Temp!VTemp(V.DataView.Temp!VTemp.RowCount--).BoxNum!FieldValTrim)
+		F.Data.DataTable.AddRow("Pallet","Pallet",V.DataTable.PTemp(v.Local.i).Pallet!FieldValTrim,"PONum",V.DataTable.PTemp(v.Local.i).PONum!FieldValTrim,"PlateType",V.DataTable.PTemp(v.Local.i).PlateType!FieldValTrim,"FirstBox",V.Local.sFirst,"LastBox",V.Local.sLast,"NumofBox",V.DataView.Temp!VTemp.RowCount,"OrderType",V.DataTable.PTemp(v.Local.i).OrderType!FieldValTrim)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Next(V.Local.i)
+
+F.Data.DataView.Close("Temp","VTemp")
+
+F.Data.DataTable.Close("Temp")
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_Label_Reprint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormLabelReprint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.txtBoxNum_GotFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtBoxNum_GotFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormLabelReprint.txtBoxNum.SelectAll
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtBoxNum_GotFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_Label_Reprint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormLabelReprint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtBoxNum_GotFocus.End
+
+Program.Sub.txtBoxNum_KeyPressEnter.Start
+F.Intrinsic.Control.SetErrorHandler("txtBoxNum_KeyPressEnter_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(txtBoxNum_LostFocus)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtBoxNum_KeyPressEnter_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_Label_Reprint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormLabelReprint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtBoxNum_KeyPressEnter.End
+
+Program.Sub.txtBoxNum_LostFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtBoxNum_LostFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sBox.Declare(String,"")
+
+V.Local.sBox.Set(V.Screen.FormLabelReprint!txtBoxNum.Text)
+
+F.Intrinsic.Control.If(V.Local.sBox.Trim,<>,"")
+	F.Intrinsic.Control.CallSub(Get_Data,"Box","Y")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtBoxNum_LostFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_Label_Reprint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormLabelReprint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtBoxNum_LostFocus.End
+
+Program.Sub.cmdBoxNum_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdBoxNum_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sTitles.Declare(String,"")
+V.Local.sWidths.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+
+F.Intrinsic.UI.SetBrowserHotTypeAhead(True)
+
+V.Local.sSql.Set("Select Distinct BoxNum, Job, Suffix From GCG_6211_Serial_Data Where WIP = 0 and Job <> '' Order by Job,Suffix") 
+V.Local.sTitles.Set("Box Number*!*Job*!*Suffix")
+V.Local.sWidths.Set("2500*!*1800*!*1800")
+
+F.Intrinsic.String.Split(V.Local.sTitles,"*!*",V.Local.sTitles)
+F.Intrinsic.String.Split(V.Local.sWidths,"*!*",V.Local.sWidths)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.UI.Browser("Select Box Number","con",V.Local.sSql,V.Local.sTitles,V.Local.sWidths,10200,9000,V.Local.sRet)
+	
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.If(V.Local.sRet,<>,V.Ambient.Cancel)
+	F.Intrinsic.String.Split(V.Local.sRet,"*!*",V.Local.sRet)
+	F.Intrinsic.Control.BlockEvents
+	Gui.FormLabelReprint.txtBoxNum.Text(V.Local.sRet.Trim)
+	F.Intrinsic.Control.UnBlockEvents
+	F.Intrinsic.Control.CallSub(txtBoxNum_LostFocus)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdBoxNum_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_Label_Reprint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormLabelReprint_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdBoxNum_Click.End
