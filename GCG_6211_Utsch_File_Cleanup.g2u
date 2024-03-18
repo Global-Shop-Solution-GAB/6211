@@ -1,0 +1,105 @@
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.Ambient.IsInTaskScheduler)
+	F.Intrinsic.Control.CallSub(Get_Files)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.CallSub(Exit)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: Project {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.Get_Files.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Files_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.iR.Declare(Long,0)
+V.Local.iF.Declare(Long,0)
+V.Local.dDeleteDate.Declare(Date)
+V.Local.sPath.Declare(String,"")
+V.Local.sFiles.Declare(String,"")
+V.Local.sTarget.Declare(String,"")
+V.Local.dFileDate.Declare(Date)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+V.Local.sSql.Set("Select Distinct rtrim(M_Path) as M_Path, R_Period From GCG_6211_Mach_Export")
+F.Data.DataTable.CreateFromSQL("MPath","con",v.Local.sSql,True)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.If(V.DataTable.MPath.RowCount--,<>,-1)
+	F.Intrinsic.Math.Mult(V.DataTable.MPath(V.DataTable.MPath.RowCount--).R_Period!FieldVal,-1,V.Local.iR)
+	F.Intrinsic.Date.DateAdd("D",V.Local.iR,V.Ambient.Date,V.Local.dDeleteDate)
+F.Intrinsic.Control.Else
+	F.Intrinsic.Control.CallSub(Exit)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.MPath.RowCount--,1)
+	V.Local.sPath.Set(V.DataTable.MPath(V.Local.i).M_Path!FieldValTrim)
+	F.Intrinsic.Control.If(V.Local.sPath.Right1,<>,"\")
+		F.Intrinsic.String.Build("{0}\",V.Local.sPath,V.Local.sPath)
+	F.Intrinsic.Control.EndIf
+	F.Intrinsic.File.GetFileList(V.Local.sPath,V.Local.sFiles)
+	F.Intrinsic.String.Split(V.Local.sFiles,":",V.Local.sFiles)
+	F.Intrinsic.Control.If(V.Local.sFiles.Trim,<>,"")
+		F.Intrinsic.Control.For(v.Local.iF,0,V.Local.sFiles.UBound,1)
+			F.Intrinsic.String.Build("{0}{1}",V.Local.sPath.Trim,V.Local.sFiles(V.Local.iF).Trim,V.Local.sTarget)
+			F.Intrinsic.File.GetFileDateTime(V.Local.sTarget,V.Local.dFileDate)
+			F.Intrinsic.Control.If(V.Local.dDeleteDate.PervasiveDate,>,V.Local.dFileDate.PervasiveDate)
+				F.Intrinsic.Control.Try
+					F.Intrinsic.File.DeleteFile(V.Local.sTarget)
+				F.Intrinsic.Control.Catch
+					'incase file is locked and cant delete.
+				F.Intrinsic.Control.EndTry
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Next(V.Local.iF)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Next(V.Local.i)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Files_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: Project {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Files.End
+
+Program.Sub.Exit.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.ODBC.Con.State,=,1)
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Exit.End
