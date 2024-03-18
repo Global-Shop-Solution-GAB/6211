@@ -1,0 +1,146 @@
+Program.Sub.ScreenSU.Start
+Gui.BoxNumAdmin..Create
+Gui.BoxNumAdmin..Caption("Box Number Admin Lock Maintenance")
+Gui.BoxNumAdmin..Size(12810,6405)
+Gui.BoxNumAdmin..MinX(0)
+Gui.BoxNumAdmin..MinY(0)
+Gui.BoxNumAdmin..Position(0,0)
+Gui.BoxNumAdmin..BackColor(-2147483633)
+Gui.BoxNumAdmin..MousePointer(0)
+Gui.BoxNumAdmin..Event(UnLoad,BoxNumAdmin_UnLoad)
+Gui.BoxNumAdmin.GsGridControl1.Create(GsGridControl)
+Gui.BoxNumAdmin.GsGridControl1.Size(12360,5580)
+Gui.BoxNumAdmin.GsGridControl1.Position(135,150)
+Gui.BoxNumAdmin.GsGridControl1.Anchor(15)
+Gui.BoxNumAdmin.GsGridControl1.Event(RowCellClick,GsGridControl1_RowCellClick)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(Get_Data)
+F.Intrinsic.Control.CallSub(Set_Prop)
+
+Gui.BoxNumAdmin..Show
+Gui.BoxNumAdmin..AlwaysOnTop(True)
+Gui.BoxNumAdmin..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Box_Admin.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(BoxNumAdmin_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.BoxNumAdmin_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("BoxNumAdmin_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("BoxNumAdmin_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.BoxNumAdmin_UnLoad.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+F.Data.DataTable.CreateFromSQL("Lock","con","Select Rec_Key, User_ID, F_Date From GCG_6211_Lock_File Order By Rec_Key",True)
+F.Data.DataTable.AddColumn("Lock","Delete_Row",String)
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Box_Admin.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(BoxNumAdmin_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Set_Prop.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Prop_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.BoxNumAdmin.GsGridControl1.AddGridviewFromDatatable("GLock","Lock")
+
+Gui.BoxNumAdmin.GsGridControl1.SetGridViewProperty("GLock","AllowColumnMoving",False)
+
+Gui.BoxNumAdmin.GsGridControl1.SetColumnProperty("GLock","Rec_Key","AllowEdit",False)
+Gui.BoxNumAdmin.GsGridControl1.SetColumnProperty("GLock","User_ID","AllowEdit",False)
+Gui.BoxNumAdmin.GsGridControl1.SetColumnProperty("GLock","F_Date","AllowEdit",False)
+Gui.BoxNumAdmin.GsGridControl1.SetColumnProperty("GLock","Delete_Row","AllowEdit",False)
+
+Gui.BoxNumAdmin.GsGridControl1.SetColumnProperty("GLock","Rec_Key","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.BoxNumAdmin.GsGridControl1.SetColumnProperty("GLock","User_ID","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.BoxNumAdmin.GsGridControl1.SetColumnProperty("GLock","F_Date","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.BoxNumAdmin.GsGridControl1.SetColumnProperty("GLock","Delete_Row","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+
+Gui.BoxNumAdmin.GsGridControl1.SetColumnProperty("GLock","Rec_Key","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.BoxNumAdmin.GsGridControl1.SetColumnProperty("GLock","User_ID","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.BoxNumAdmin.GsGridControl1.SetColumnProperty("GLock","F_Date","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.BoxNumAdmin.GsGridControl1.SetColumnProperty("GLock","Delete_Row","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+
+Gui.BoxNumAdmin.GsGridControl1.SetColumnProperty("GLock","Delete_Row","Caption"," ")
+Gui.BoxNumAdmin.GsGridControl1.SetColumnProperty("GLock","Delete_Row","Fixed","Right")
+Gui.BoxNumAdmin.GsGridControl1.ColumnEdit("GLock","Delete_Row","EditorButton","Delete Row")
+
+Gui.BoxNumAdmin.GsGridControl1.MainView("GLock")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Prop_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Box_Admin.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(BoxNumAdmin_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Prop.End
+
+Program.Sub.GsGridControl1_RowCellClick.Start
+F.Intrinsic.Control.SetErrorHandler("GsGridControl1_RowCellClick_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+
+F.Intrinsic.Control.If(V.Args.Column.UCase,=,"DELETE_ROW")
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	F.Intrinsic.String.Build("Delete From GCG_6211_Lock_File Where Rec_Key = '{0}'",V.DataTable.Lock(V.Args.RowIndex).Rec_Key!FieldValTrim,V.Local.sSql)
+	F.ODBC.Connection!Con.Execute(V.Local.sSql)
+	F.ODBC.Connection!Con.Close
+	F.Data.DataTable.DeleteRow("Lock",V.Args.RowIndex)
+	F.Data.DataTable.AcceptChanges("Lock")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("GsGridControl1_RowCellClick_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Box_Admin.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(BoxNumAdmin_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridControl1_RowCellClick.End
