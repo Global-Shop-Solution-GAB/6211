@@ -1,0 +1,436 @@
+Program.Sub.ScreenSU.Start
+Gui.FormUtsch..Create
+Gui.FormUtsch..Caption("Utsch File Generation")
+Gui.FormUtsch..Size(15360,10695)
+Gui.FormUtsch..MinX(0)
+Gui.FormUtsch..MinY(0)
+Gui.FormUtsch..Position(0,0)
+Gui.FormUtsch..BackColor(-2147483633)
+Gui.FormUtsch..MousePointer(0)
+Gui.FormUtsch..Event(UnLoad,FormUtsch_UnLoad)
+Gui.FormUtsch.lblMachine.Create(Label,"Export Machine",False,1935,255,0,5025,135,True,0,"Arial",8,-2147483633,0)
+Gui.FormUtsch.ddlMachine.Create(DropDownList)
+Gui.FormUtsch.ddlMachine.Size(1725,330)
+Gui.FormUtsch.ddlMachine.Position(5025,360)
+Gui.FormUtsch.ddlMachine.Visible(False)
+Gui.FormUtsch.lblJob.Create(Label,"Select Jobs",True,1935,255,0,105,750,True,0,"Arial",8,-2147483633,0)
+Gui.FormUtsch.GsGridJob.Create(GsGridControl)
+Gui.FormUtsch.GsGridJob.Size(3000,8610)
+Gui.FormUtsch.GsGridJob.Position(105,975)
+Gui.FormUtsch.GsGridJob.Event(RowCellClick,GsGridJob_RowCellClick)
+Gui.FormUtsch.lblPlateData.Create(Label,"Plate Data",True,1935,255,0,3810,750,True,0,"Arial",8,-2147483633,0)
+Gui.FormUtsch.GsGridPlate.Create(GsGridControl)
+Gui.FormUtsch.GsGridPlate.Size(11280,8610)
+Gui.FormUtsch.GsGridPlate.Position(3810,975)
+Gui.FormUtsch.GsGridPlate.Event(RowCellClick,GsGridPlate_RowCellClick)
+Gui.FormUtsch.cmdExport.Create(Button)
+Gui.FormUtsch.cmdExport.Size(1440,375)
+Gui.FormUtsch.cmdExport.Position(105,9735)
+Gui.FormUtsch.cmdExport.Caption("Create Batches")
+Gui.FormUtsch.cmdExport.Event(Click,cmdExport_Click)
+Gui.FormUtsch.cmdRefresh.Create(Button)
+Gui.FormUtsch.cmdRefresh.Size(495,495)
+Gui.FormUtsch.cmdRefresh.Position(3210,4800)
+Gui.FormUtsch.cmdRefresh.Caption("REFRESH")
+Gui.FormUtsch.cmdRefresh.Event(Click,cmdRefresh_Click)
+Gui.FormUtsch.lblBatch.Create(Label,"Batch Size",True,1935,255,0,135,120,True,0,"Arial",8,-2147483633,0)
+Gui.FormUtsch.txtBatch.Create(TextBox,"",True,1215,300,0,135,360,True,0,"Arial",8,-2147483643,1)
+Gui.FormUtsch.txtBatch.NumericOnly(2)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.sQPath.Declare(String,"")
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.SelectCase(V.Caller.Hook)
+	F.Intrinsic.Control.Case(49710)
+		V.Passed.MainFormView-windowsUIButtonPanel-1.Set("Load GAB|~|Utsch Batch|~|Utsch Assign")
+		
+	F.Intrinsic.Control.Case(49761)
+		F.Intrinsic.Control.CallSub(Get_Data)
+		F.Intrinsic.Control.CallSub(Set_Properties)
+		
+		Gui.FormUtsch..Show
+		
+		Gui.FormUtsch..AlwaysOnTop(True)
+		Gui.FormUtsch..AlwaysOnTop(False)
+		
+F.Intrinsic.Control.EndSelect
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Utsch_Export.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormUtsch_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.FormUtsch_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormUtsch_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.ODBC.Con.State,=,1)
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormUtsch_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormUtsch_UnLoad.End
+
+Program.Sub.cmdRefresh_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdRefresh_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sFilter.Declare(String,"")
+V.Local.sJS.Declare(String,"")
+
+F.Data.DataView.ToString("Job","SelectJobs","JS",V.Ambient.NewLine,"','",V.Local.sJS)
+
+F.Intrinsic.String.Build("JS IN('{0}') and Prev_Exported = 'Previously Not-Exported'",V.Local.sJS,V.Local.sFilter)
+
+F.Data.DataView.SetFilter("Plate","Export",V.Local.sFilter)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdRefresh_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Utsch_Export.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormUtsch_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdRefresh_Click.End
+
+Program.Sub.cmdExport_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdExport_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sMachine.Declare(String,"")
+V.Local.sQPath.Declare(String,"")
+V.Local.sFilter.Declare(String,"")
+V.Local.iSeq.Declare(Long,0)
+V.Local.sFileName.Declare(String,"")
+V.Local.sFileLoc.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.sSql.Declare(String,"")
+V.Local.iC.Declare(Long,0)
+V.Local.iSize.Declare(Long,0)
+V.Local.iCount.Declare(Long,0)
+V.Local.sData.Declare(String,"")
+V.Local.sSerial.Declare(String,"")
+V.Local.iC2.Declare(Long,0)
+
+'V.Local.sMachine.Set(V.Screen.FormUtsch!ddlMachine.Value)
+
+'F.Intrinsic.Control.If(V.Local.sMachine.Trim,=,"")
+'	F.Intrinsic.UI.Msgbox("Select a Machine to Export too.....","Attention")
+'F.Intrinsic.Control.Else
+	Gui.FormUtsch..Visible(False)
+	F.Intrinsic.UI.InvokeWaitDialog("Building Utsch CSV File..............")
+'	F.Intrinsic.String.Build("Machine = '{0}'",V.Local.sMachine,V.Local.sFilter)
+	F.Data.DataView.Create("Machine","VMachine",22,V.Local.sFilter,"")
+	V.Global.sQPath.Set(V.DataView.Machine!VMachine(V.DataView.Machine!VMachine.RowCount--).Q_Path!FieldValTrim)
+	F.Intrinsic.Control.If(V.Global.sQPath.Right1,<>,"\")
+		F.Intrinsic.String.Build("{0}\",V.Global.sQPath,V.Global.sQPath)
+	F.Intrinsic.Control.EndIf
+
+	F.Intrinsic.Control.If(V.Screen.FormUtsch!txtBatch.Text,<>,"")
+		V.Local.iSize.Set(V.Screen.FormUtsch!txtBatch.Text)
+	F.Intrinsic.Control.Else
+		V.Local.iSize.Set(V.DataView.Machine!VMachine(V.DataView.Machine!VMachine.RowCount--).Batch_Size!FieldValLong)
+	F.Intrinsic.Control.EndIf
+	
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	F.Intrinsic.Control.For(V.Local.i,0,V.DataView.Job!SelectJobs.RowCount--,1)
+		F.Intrinsic.String.Build("JS = '{0}' and Exported = True",V.DataView.Job!SelectJobs(V.Local.i).JS!FieldValTrim,V.Local.sFilter)
+		
+		F.Data.DataView.Create("Plate","VPlate",22,V.Local.sFilter,"")
+		F.Intrinsic.Control.If(V.DataView.Plate!VPlate.RowCount--,<>,-1)
+			V.Local.iC2.Set(0)
+			F.Intrinsic.Control.For(V.Local.iC,0,V.DataView.Plate!VPlate.RowCount--,1)
+				F.Intrinsic.Control.If(V.Local.sData.Trim,=,"")
+					V.Local.sSerial.Set(V.DataView.Plate!VPlate(V.Local.iC).Serial!FieldValTrim)
+					F.Intrinsic.String.Build("{0},{1},{2}",V.DataView.Plate!VPlate(V.Local.iC).Plate!FieldValTrim,V.DataView.Plate!VPlate(V.Local.iC).V_Type!FieldVal,V.DataView.Plate!VPlate(V.Local.iC).Packsize!FieldVal,V.Local.sData)
+				F.Intrinsic.Control.Else
+					F.Intrinsic.String.Build("{0}','{1}",V.Local.sSerial,V.DataView.Plate!VPlate(V.Local.iC).Serial!FieldValTrim,V.Local.sSerial)
+					F.Intrinsic.String.Build("{3}{4}{0},{1},{2}",V.DataView.Plate!VPlate(V.Local.iC).Plate!FieldValTrim,V.DataView.Plate!VPlate(V.Local.iC).V_Type!FieldVal,V.DataView.Plate!VPlate(V.Local.iC).Packsize!FieldVal,V.Local.sData,V.Ambient.NewLine,V.Local.sData)
+				F.Intrinsic.Control.EndIf
+				
+				F.Intrinsic.Math.Add(V.Local.iC2,1,V.Local.iC2)
+				
+				F.Intrinsic.Control.If(V.Local.iC2,=,V.Local.iSize)
+					F.ODBC.Connection!Con.GetID("GCG_6211_Mach_Export","L_Seq",True,True,V.Local.iSeq)
+					F.Intrinsic.String.Build("Update GCG_6211_Mach_Export Set L_Seq = {0}",V.Local.iSeq,V.Local.sSql)
+					F.ODBC.Connection!Con.Execute(V.Local.sSql)
+					F.Intrinsic.String.Build("{0}{1}_{2}.csv",V.Global.sQPath,V.DataView.Job!SelectJobs(V.Local.i).JS!FieldValTrim,V.Local.iSeq,V.Local.sFileLoc)
+					F.Intrinsic.String.Build("{0}_{1}",V.DataView.Job!SelectJobs(V.Local.i).JS!FieldValTrim,V.Local.iSeq,V.Local.sFileName)
+					F.Intrinsic.File.String2File(V.Local.sFileLoc,V.Local.sData)
+					F.Intrinsic.String.Build("Update GCG_6211_Serial_Data Set BATCH_NUM = '{1}', BATCH_SIZE = {2} Where Serial In('{0}')",V.Local.sSerial,V.Local.sFileName,V.Local.iSize,V.Local.sSql)
+					F.ODBC.Connection!Con.Execute(V.Local.sSql)
+					V.Local.iSeq.Set(0)
+					V.Local.sData.Set("")
+					V.Local.sSerial.Set("")
+					V.Local.iC2.Set(0)
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.Next(v.Local.iC)
+			
+			F.Intrinsic.Control.If(V.Local.sData.Trim,<>,"")
+				F.ODBC.Connection!Con.GetID("GCG_6211_Mach_Export","L_Seq",True,True,V.Local.iSeq)
+				F.Intrinsic.String.Build("Update GCG_6211_Mach_Export Set L_Seq = {0}",V.Local.iSeq,V.Local.sSql)
+				F.ODBC.Connection!Con.Execute(V.Local.sSql)
+				F.Intrinsic.String.Build("{0}{1}_{2}.csv",V.Global.sQPath,V.DataView.Job!SelectJobs(V.Local.i).JS!FieldValTrim,V.Local.iSeq,V.Local.sFileLoc)
+				F.Intrinsic.File.String2File(V.Local.sFileLoc,V.Local.sData)
+				F.Intrinsic.String.Build("{0}_{1}",V.DataView.Job!SelectJobs(V.Local.i).JS!FieldValTrim,V.Local.iSeq,V.Local.sFileName)
+				F.Intrinsic.String.Build("Update GCG_6211_Serial_Data Set BATCH_NUM = '{1}', BATCH_SIZE = {2} Where Serial In('{0}')",V.Local.sSerial,V.Local.sFileName,V.Local.iC2,V.Local.sSql)
+				F.ODBC.Connection!Con.Execute(V.Local.sSql)
+				V.Local.iSeq.Set(0)
+				V.Local.sData.Set("")
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.EndIf
+		
+		F.Data.DataView.ToString("Plate","VPlate","Serial",V.Ambient.NewLine,"','",V.Local.sSerial)
+		F.Data.DataView.Close("Plate","VPlate")
+		
+		F.Intrinsic.String.Build("Update GCG_6211_Serial_Data Set EXPORTED = 1 Where Serial In('{0}')",V.Local.sSerial,V.Local.sSql)
+		F.ODBC.Connection!Con.Execute(V.Local.sSql)
+	F.Intrinsic.Control.Next(V.Local.i)
+	
+	F.Intrinsic.UI.CloseWaitDialog
+	F.ODBC.Connection!Con.Close
+	F.Intrinsic.Control.CallSub(FormUtsch_UnLoad)
+'F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdExport_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Utsch_Export.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormUtsch_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdExport_Click.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sJS.Declare(String,"")
+
+Gui.FormUtsch.ddlMachine.AddItem(" ",0)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.Dictionary.CreateFromSQL("Machine","con","Select Machine, Machine From GCG_6211_Mach_Export Order By Machine")
+
+Gui.FormUtsch.ddlMachine.AddItems("Dictionary","Machine")
+
+F.Data.Dictionary.Close("Machine")
+
+F.Data.DataTable.CreateFromSQL("Machine","con","Select Machine, Q_Path, Batch_Size From GCG_6211_Mach_Export Order By Machine",True)
+
+F.Intrinsic.Control.If(V.DataTable.Machine.RowCount--,<>,-1)
+	Gui.FormUtsch.txtBatch.Text(V.DataTable.Machine(V.DataTable.Machine.RowCount--).Batch_Size!FieldValLong)
+	V.Global.sQPath.Set(V.DataTable.Machine(V.DataTable.Machine.RowCount--).Q_Path!FieldVal)
+F.Intrinsic.Control.EndIf
+
+
+F.Data.DataTable.CreateFromSQL("Plate","con","Select rtrim(Job)+IF(Suffix is null,'',Suffix) as JS, Job, Suffix,IF(Exported = 0,Cast(1 as bit),Cast(0 as bit)) as Exported,IF(Exported = 1,'Previously Exported','Previously Not-Exported') as Prev_Exported, Part, rtrim(Plate) as Plate, rtrim(Serial) as Serial, Packsize, VehType, if(ucase(Vehtype) like '%PASSENGER%',1,2) as V_Type From GCG_6211_Serial_Data Where Plate like '%//%' and Job <> '' Order by Job,Suffix,Serial",True)
+
+F.Data.DataView.Create("Plate","TempPlate",22,"Prev_Exported = 'Previously Not-Exported'","")
+F.Data.DataView.ToDataTableDistinct("Plate","TempPlate","TempPlate","JS",True)
+F.Data.DataView.Create("TempPlate","Temp",22,"","")
+F.Data.DataView.ToString("TempPlate","Temp",V.Ambient.NewLine,"','",V.Local.sJS)
+
+F.Intrinsic.String.Build("Select Cast(0 as Bit) as Selection, rtrim(Job)+IF(Suffix is null,'',Suffix) as JS, Job, Suffix From V_Job_Header Where Date_Closed = '1900-01-01' and rtrim(Job)+IF(Suffix is null,'',Suffix) IN('{0}') Order by Job,Suffix",V.Local.sJS.Trim,V.Local.sSql)
+F.Data.DataTable.CreateFromSQL("Job","con",V.Local.sSql,True)
+
+F.Data.DataView.Close("Plate","TempPlate")
+F.Data.DataView.Close("TempPlate","Temp")
+F.Data.DataTable.Close("TempPlate")
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Utsch_Export.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormUtsch_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Data.DataView.Create("Job","SelectJobs",22,"Selection = True","")
+F.Data.DataView.Create("Plate","Export",22,"Job = '-1'","")
+
+Gui.FormUtsch.GsGridJob.AddGridviewFromDatatable("GJob","Job")
+Gui.FormUtsch.GsGridJob.SetGridviewProperty("GJob","ReadOnly",True)
+Gui.FormUtsch.GsGridJob.SetGridviewProperty("GJob","Editable",False)
+
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","Selection","Visible",True)
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","JS","Visible",False)
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","Job","Visible",True)
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","Suffix","Visible",True)
+
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","Selection","Caption"," ")
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","JS","Caption","Job/Suffix")
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","Job","Caption","Job")
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","Suffix","Caption","Suffix")
+
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","Selection","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","JS","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","Job","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","Suffix","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","Selection","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","JS","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","Job","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","Suffix","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","Selection","HeaderFontBold",True)
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","JS","HeaderFontBold",True)
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","Job","HeaderFontBold",True)
+Gui.FormUtsch.GsGridJob.SetColumnProperty("GJob","Suffix","HeaderFontBold",True)
+
+Gui.FormUtsch.GsGridJob.MainView("GJob")
+
+Gui.FormUtsch.GsGridPlate.AddGridviewFromDataview("GPlate","Plate","Export")
+Gui.FormUtsch.GsGridPlate.SetGridviewProperty("GPlate","ReadOnly",True)
+Gui.FormUtsch.GsGridPlate.SetGridviewProperty("GPlate","Editable",False)
+
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","JS","Visible",False)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Job","Visible",False)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Suffix","Visible",False)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Exported","Visible",True)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Prev_Exported","Visible",True)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Part","Visible",True)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Plate","Visible",False)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Serial","Visible",True)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Packsize","Visible",True)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","VehType","Visible",True)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","V_Type","Visible",False)
+
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","JS","Caption","Job/Suffix")
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Job","Caption","Job")
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Suffix","Caption","Suffix")
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Exported","Caption","Export")
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Prev_Exported","Caption","Previously Exported")
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Part","Caption","Part")
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Plate","Caption","Plate")
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Serial","Caption","Serial")
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Packsize","Caption","Packsize")
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","VehType","Caption","Vehicle type")
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","V_Type","Caption","V Type")
+
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","JS","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Job","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Suffix","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Exported","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Prev_Exported","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Part","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Plate","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Serial","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Packsize","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","VehType","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","V_Type","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","JS","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Job","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Suffix","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Exported","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Prev_Exported","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Part","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Plate","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Serial","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Packsize","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","VehType","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","V_Type","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","JS","HeaderFontBold",True)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Job","HeaderFontBold",True)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Suffix","HeaderFontBold",True)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Exported","HeaderFontBold",True)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Prev_Exported","HeaderFontBold",True)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Part","HeaderFontBold",True)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Plate","HeaderFontBold",True)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Serial","HeaderFontBold",True)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","Packsize","HeaderFontBold",True)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","VehType","HeaderFontBold",True)
+Gui.FormUtsch.GsGridPlate.SetColumnProperty("GPlate","V_Type","HeaderFontBold",True)
+
+Gui.FormUtsch.GsGridPlate.MainView("GPlate")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Utsch_Export.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormUtsch_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.GsGridJob_RowCellClick.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.Args.Column.UCase,=,"SELECTION")
+	F.Data.DataTable.SetValue("Job",V.Args.RowHandle,"SELECTION",V.DataTable.Job(V.Args.RowHandle).Selection!FieldValNot)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Utsch_Export.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormUtsch_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridJob_RowCellClick.End
+
+Program.Sub.GsGridPlate_RowCellClick.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.Args.Column.UCase,=,"EXPORTED")
+	F.Data.DataTable.SetValue("Plate",V.Args.RowHandle,"EXPORTED",V.DataTable.Plate(V.Args.RowHandle).Exported!FieldValNot)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Utsch_Export.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormUtsch_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.GsGridPlate_RowCellClick.End
