@@ -1,0 +1,242 @@
+Program.Sub.ScreenSU.Start
+Gui.FormMachine..Create
+Gui.FormMachine..Caption("Utsch Machine Maintenance")
+Gui.FormMachine..Size(15360,10560)
+Gui.FormMachine..MinX(0)
+Gui.FormMachine..MinY(0)
+Gui.FormMachine..Position(0,0)
+Gui.FormMachine..BackColor(-2147483633)
+Gui.FormMachine..MousePointer(0)
+Gui.FormMachine..Event(UnLoad,FormMachine_UnLoad)
+Gui.FormMachine.GsGridControl1.Create(GsGridControl)
+Gui.FormMachine.GsGridControl1.Size(15030,8775)
+Gui.FormMachine.GsGridControl1.Position(105,870)
+Gui.FormMachine.lblBSize.Create(Label,"# of Pates per Batch",True,1935,255,0,105,120,True,0,"Arial",8,-2147483633,0)
+Gui.FormMachine.txtBSize.Create(TextBox,"",True,1215,300,0,105,375,True,0,"Arial",8,-2147483643,1)
+Gui.FormMachine.txtBSize.NumericOnly(2)
+Gui.FormMachine.lblRet.Create(Label," # Days Retention Period",True,1935,255,0,2280,120,True,0,"Arial",8,-2147483633,0)
+Gui.FormMachine.txtRet.Create(TextBox,"",True,1215,300,0,2280,375,True,0,"Arial",8,-2147483643,1)
+Gui.FormMachine.txtRet.NumericOnly(2)
+Gui.FormMachine.cmdSave.Create(Button)
+Gui.FormMachine.cmdSave.Size(855,375)
+Gui.FormMachine.cmdSave.Position(105,9720)
+Gui.FormMachine.cmdSave.Caption("Save")
+Gui.FormMachine.cmdSave.Event(Click,cmdSave_Click)
+Gui.FormMachine.lblBatch.Create(Label,"Batch Directory",True,1935,255,0,4890,120,True,0,"Arial",8,-2147483633,0)
+Gui.FormMachine.txtBatch.Create(TextBox,"",True,8790,300,0,4935,375,True,0,"Arial",8,-2147483643,1)
+Gui.FormMachine.txtBatch.MaxLength(100)
+Gui.FormMachine.txtBatch.Event(GotFocus,txtBatch_GotFocus)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.CallSub(Get_Data)
+F.Intrinsic.Control.CallSub(Set_Properties)
+
+Gui.FormMachine..Show
+Gui.FormMachine..AlwaysOnTop(True)
+Gui.FormMachine..AlwaysOnTop(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Machine_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormMachine_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.cmdSave_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdSave_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.DataView.Machine!VMachine.RowCount--,<>,-1)
+	F.Intrinsic.Control.If(V.DataView.Machine!VMachine(V.DataView.Machine!VMachine.RowCount--).L_Seq,=,"")
+		F.Data.DataView.SetValue("Machine","VMachine",-1,"L_Seq",0,"Batch_Size",V.Screen.FormMachine!txtBSize.Text,"R_Period",V.Screen.FormMachine!txtRet.Text,"Q_Path",V.Screen.FormMachine!txtBatch.Text)
+	F.Intrinsic.Control.Else
+		F.Data.DataView.SetValue("Machine","VMachine",-1,"Batch_Size",V.Screen.FormMachine!txtBSize.Text,"R_Period",V.Screen.FormMachine!txtRet.Text,"Q_Path",V.Screen.FormMachine!txtBatch.Text)
+	F.Intrinsic.Control.EndIf
+	
+	F.ODBC.Connection!Con.OpenCompanyConnection
+	
+	F.Data.DataView.ToDataTable("Machine","VMachine","MachineSave",True)
+	
+	F.Data.DataTable.SaveToDB("MachineSave","con","GCG_6211_Mach_Export","Machine",256,"Machine@!@Machine*!*Q_Path@!@Q_Path*!*M_Path@!@M_Path*!*L_Seq@!@L_Seq*!*Batch_Size@!@Batch_Size*!*R_Period@!@R_Period")
+	
+	F.Data.DataTable.Close("MachineSave")
+	
+	F.ODBC.Connection!Con.Close
+	
+	F.Intrinsic.UI.Msgbox("Machine Data Saved..........","Attention")
+	
+F.Intrinsic.Control.Else
+	F.Intrinsic.UI.Msgbox("Feel out Queued Path for at least 1 Machine to save","Attention")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdSave_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Machine_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormMachine_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.FormMachine_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormMachine_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.ODBC.Con.State,=,1)
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.If(V.DataTable.Machine.Exists)
+	F.Data.DataView.Close("Machine","VMachine")
+	F.Data.DataTable.Close("Machine")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormMachine_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormMachine_UnLoad.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+
+V.Local.sSql.Set("Select a.Machine, rtrim(Q_Path) as Q_Path, rtrim(M_Path) as M_Path, L_Seq, Batch_Size, R_Period From V_Workcenters a left join GCG_6211_Mach_Export b on a.Machine = b.Machine Order by a.Machine")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.DataTable.CreateFromSQL("Machine","con",V.Local.sSql,True)
+
+F.Data.DataView.Create("Machine","VMachine",22,"","")
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.If(V.DataView.Machine!VMachine.RowCount--,<>,-1)
+	Gui.FormMachine.txtBSize.Text(V.DataView.Machine!VMachine(V.DataView.Machine!VMachine.RowCount--).Batch_Size!FieldVal)
+	Gui.FormMachine.txtRet.Text(V.DataView.Machine!VMachine(V.DataView.Machine!VMachine.RowCount--).R_Period!FieldVal)
+	Gui.FormMachine.txtBatch.Text(V.DataView.Machine!VMachine(V.DataView.Machine!VMachine.RowCount--).Q_Path!FieldValTrim)
+F.Intrinsic.Control.Else
+	Gui.FormMachine.txtBSize.Text("50")
+	Gui.FormMachine.txtRet.Text("30")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Machine_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormMachine_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Set_Properties.Start
+F.Intrinsic.Control.SetErrorHandler("Set_Properties_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormMachine.GsGridControl1.AddGridviewFromDatatable("GMachine","Machine")
+
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Machine","ReadOnly",True)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","M_Path","ReadOnly",False)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Q_Path","ReadOnly",True)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","L_Seq","ReadOnly",True)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Batch_Size","ReadOnly",True)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","R_Period","ReadOnly",True)
+
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Machine","AllowEdit",False)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","M_Path","AllowEdit",True)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Q_Path","AllowEdit",False)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","L_Seq","AllowEdit",False)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Batch_Size","AllowEdit",False)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","R_Period","AllowEdit",False)
+
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Machine","Visible",True)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","M_Path","Visible",True)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Q_Path","Visible",False)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","L_Seq","Visible",False)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Batch_Size","Visible",False)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","R_Period","Visible",False)
+
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Machine","Caption","Machine")
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","M_Path","Caption","Machine Path")
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Q_Path","Caption","Queued Path")
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","L_Seq","Caption","Last Seq")
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Batch_Size","Caption","Batch Size")
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","R_Period","Caption","Retention Period")
+
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Machine","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Q_Path","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","M_Path","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","L_Seq","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Batch_Size","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","R_Period","HeaderBackColor",V.Enum.ThemeColors!ThemeColorDark)
+
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Machine","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Q_Path","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","M_Path","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","L_Seq","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Batch_Size","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","R_Period","HeaderForeColor",V.Enum.ThemeColors!TextOnThemeColor)
+
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Machine","HeaderFontBold",True)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Q_Path","HeaderFontBold",True)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","M_Path","HeaderFontBold",True)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","L_Seq","HeaderFontBold",True)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","Batch_Size","HeaderFontBold",True)
+Gui.FormMachine.GsGridControl1.SetColumnProperty("GMachine","R_Period","HeaderFontBold",True)
+
+Gui.FormMachine.GsGridControl1.MainView("GMachine")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Set_Properties_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Machine_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormMachine_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Set_Properties.End
+
+Program.Sub.txtBatch_GotFocus.Start
+F.Intrinsic.Control.SetErrorHandler("txtBatch_GotFocus_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormMachine.txtBatch.SelectAll
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("txtBatch_GotFocus_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Machine_Maint.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(FormMachine_UnLoad)
+Function.Intrinsic.Control.EndIf
+Program.Sub.txtBatch_GotFocus.End
