@@ -1,0 +1,213 @@
+Program.Sub.Preflight.Start
+V.Global.sPIDFileFQN.Declare(String,"")
+Program.External.Include.Library("2003.lib")
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+'F.Intrinsic.Control.If(V.Caller.Hook,=,38130)
+
+	F.Intrinsic.UI.InvokeWaitDialog("Processing Plate Data..................")
+	F.Intrinsic.Control.CallSub(Get_Data)
+	F.Intrinsic.UI.CloseWaitDialog
+'F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.CallSub(Exit)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Proc_WIP.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+'	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.Get_Data.Start
+F.Intrinsic.Control.SetErrorHandler("Get_Data_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.i.Declare(Long,0)
+
+F.Data.DataTable.Create("PlateData",True)
+
+F.Data.DataTable.AddColumn("PlateData","JOB",String)
+F.Data.DataTable.AddColumn("PlateData","SUFFIX",String)
+F.Data.DataTable.AddColumn("PlateData","SERIAL",String)
+F.Data.DataTable.AddColumn("PlateData","WIP",Boolean)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.DataTable.CreateFromSQL("Serial","con","Select Job,Suffix,Serial From GCG_6211_WIP_QUEUE Order by Job,Suffix,Serial",True)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.If(V.DataTable.Serial.RowCount--,<>,-1)
+	F.Data.DataView.Create("Serial","VSerial",22,"","")
+	F.Data.DataView.ToDataTableDistinct("Serial","VSerial","JS","Job*!*Suffix",True)
+	F.Data.DataView.Close("Serial","VSerial")
+	F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.JS.RowCount--,1)
+		F.Intrinsic.Control.CallSub("Process_Records","Index",V.Local.i)
+		F.Intrinsic.Control.If(V.DataTable.PlateData.RowCount--,<>,-1)
+			F.ODBC.Connection!Con.OpenCompanyConnection
+			F.Data.DataTable.SaveToDB("PlateData","con","GCG_6211_Serial_Data","Serial*!*Job*!*Suffix",256,"Serial@!@Serial*!*Job@!@Job*!*Suffix@!@Suffix*!*WIP@!@WIP")
+			F.ODBC.Connection!Con.Close
+		F.Intrinsic.Control.EndIf
+		F.Data.DataTable.DeleteRow("PlateData")
+		F.Data.DataTable.AcceptChanges("PlateData")
+	F.Intrinsic.Control.Next(V.Local.i)
+F.Intrinsic.Control.Else
+	F.Intrinsic.Control.CallSub(Exit)
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Data.DataTable.SaveToDB("Serial","con","GCG_6211_WIP_QUEUE","Job*!*Suffix*!*Serial",7)
+
+F.ODBC.Connection!Con.Close
+
+F.Data.DataTable.Close("Serial")
+
+F.Intrinsic.File.DeleteFile(v.Global.sPIDFileFQN)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_Data_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Proc_WIP.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+'	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_Data.End
+
+Program.Sub.Process_Records.Start
+F.Intrinsic.Control.SetErrorHandler("Process_Records_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.iYear.Declare(Long,0)
+V.Local.iMonth.Declare(Long,0)
+V.Local.iDay.Declare(Long,0)
+V.Local.sSql.Declare(String,"")
+V.Local.iQty.Declare(Long,0)
+V.Local.sJob.Declare(String,"")
+V.Local.sSuffix.Declare(String,"")
+V.Local.sMethod.Declare(String,"")
+V.Local.sClose.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.sFilter.Declare(String,"")
+
+V.Local.sJob.Set(V.DataTable.JS(V.Args.Index).Job!FieldValTrim)
+V.Local.sSuffix.Set(V.DataTable.JS(V.Args.Index).Suffix!FieldValTrim)
+
+F.Intrinsic.String.Build("Job = '{0}' and Suffix = '{1}'",V.Local.sJob,V.Local.sSuffix,V.Local.sFilter)
+
+F.Data.DataView.Create("Serial","VSerial",22,V.Local.sFilter,"Serial")
+
+'Set the Year, month, and day values for the transaction date
+F.Intrinsic.Date.Year(V.Ambient.Date,V.Local.iYear)
+F.Intrinsic.Date.Month(V.Ambient.Date,V.Local.iMonth)
+F.Intrinsic.Date.Day(V.Ambient.Date,V.Local.iDay)
+	
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.String.Build("Select Qty_Order - Qty_Completed From V_Job_Header Where Job = '{0}' and Suffix = '{1}'",V.Local.sJob.Trim,V.Local.sSuffix.Trim,V.Local.sSql)
+F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSql,V.Local.iQty)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Math.Sub(V.Local.iQty,V.DataView.Serial!VSerial.RowCount,V.Local.iQty)
+
+F.Intrinsic.Control.If(V.Local.iQty,<,1)
+	V.Local.sClose.Set("Y")
+	V.Local.sMethod.Set("R")
+F.Intrinsic.Control.Else
+	V.Local.sClose.Set("N")
+	V.Local.sMethod.Set("E")
+F.Intrinsic.Control.EndIf
+
+V.Local.iQty.Set(V.DataView.Serial!VSerial.RowCount)
+
+F.Intrinsic.Control.For(V.Local.i,V.DataView.Serial!VSerial.RowCount--,0,-1)
+	F.Intrinsic.Control.If(V.Local.i,=,0)
+		F.Data.DataTable.AddRow("2003","Mode","NS","WONum",V.Local.sJob.Trim,"WOSuffix",V.Local.sSuffix.Trim,"XferYear",V.Local.iYear,"XferMonth",V.Local.iMonth,"XferDay",V.Local.iDay,"CloseWO",V.Local.sClose,"Quantity",V.Local.iQty,"CostMethod",V.Local.sMethod,"UpdateInv","Y","PrintLabels","N")
+	F.Intrinsic.Control.EndIf
+	F.Data.DataTable.AddRow("2003File","WONum",V.Local.sJob.Trim,"WOSuffix",V.Local.sSuffix.Trim,"Lot","","Bin","","Serial",V.DataView.Serial!VSerial(V.Local.i).Serial!FieldValTrim,"SpecificQuantity",1)
+	F.Data.DataTable.AddRow("PlateData","Job",V.Local.sJob.Trim,"Suffix",V.Local.sSuffix.Trim,"Serial",V.DataView.Serial!VSerial(V.Local.i).Serial!FieldValTrim,"WIP",True)
+	F.Data.DataTable.DeleteRow("Serial",V.DataView.Serial!VSerial(V.Local.i).DataTableIndex)
+F.Intrinsic.Control.Next(V.Local.i)
+
+F.Intrinsic.Control.If(V.DataTable.2003.RowCount--,<>,-1)
+	F.Intrinsic.Control.CallSub(2003Sync)
+	F.Data.DataTable.AcceptChanges("2003")
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Process_Records_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Proc_WIP.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+'	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Process_Records.End
+
+Program.Sub.Exit.Start
+F.Intrinsic.Control.SetErrorHandler("Exit_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Exit_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Exit.End
+
+Program.Sub.Is_Running.Start
+F.Intrinsic.Control.SetErrorHandler("Is_Running_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+v.Local.sOldPID.Declare(String,"")
+v.Local.bPIDFileExists.Declare(Boolean,False)
+V.Local.bIsOldPIDRunning.Declare(Boolean,False)
+
+'We run the program async so it will not hold up On-Line Update so we need to make sure not to run on top of ourself with previous/later calls to the program
+f.Intrinsic.String.Build("{0}\6211.pid",v.Caller.FilesDir,v.Global.sPIDFileFQN)
+f.Intrinsic.File.Exists(v.Global.sPIDFileFQN,v.Local.bPIDFileExists)
+
+f.Intrinsic.Control.If(v.Local.bPIDFileExists)
+	f.Intrinsic.File.File2String(v.Global.sPIDFileFQN,v.Local.sOldPID)
+	f.Intrinsic.Task.PIDRunning(v.Local.sOldPID.Long,v.Local.bIsOldPIDRunning)
+	
+	'If the old PID is running we'll exit the program to prevent running on top of it. Otherwise we'll write our current PID to the PID file to let later processes know we're running
+	f.Intrinsic.Control.If(v.Local.bIsOldPIDRunning)
+		F.Intrinsic.Control.CallSub(Exit)	
+	f.Intrinsic.Control.Else
+		f.Intrinsic.File.String2File(v.Global.sPIDFileFQN,v.Ambient.PID)
+	f.Intrinsic.Control.EndIf
+	
+f.Intrinsic.Control.Else
+	f.Intrinsic.File.String2File(v.Global.sPIDFileFQN,v.Ambient.PID)
+f.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Is_Running_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Proc_WIP.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+'	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Is_Running.End
