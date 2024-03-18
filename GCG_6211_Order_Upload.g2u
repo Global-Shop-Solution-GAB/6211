@@ -1,0 +1,963 @@
+Program.Sub.ScreenSU.Start
+Gui.FormOrdUpload..Create
+Gui.FormOrdUpload..Caption("Order Upload")
+Gui.FormOrdUpload..Size(6525,1515)
+Gui.FormOrdUpload..MinX(0)
+Gui.FormOrdUpload..MinY(0)
+Gui.FormOrdUpload..Position(0,0)
+Gui.FormOrdUpload..BackColor(-2147483633)
+Gui.FormOrdUpload..MousePointer(0)
+Gui.FormOrdUpload..Event(UnLoad,FormOrdUpload_UnLoad)
+Gui.FormOrdUpload.lblOrdUpload.Create(Label,"Select txt file to Upload",True,5325,255,0,105,225,True,0,"Arial",8,-2147483633,0)
+Gui.FormOrdUpload.cmdFileBrowser.Create(Button)
+Gui.FormOrdUpload.cmdFileBrowser.Size(480,420)
+Gui.FormOrdUpload.cmdFileBrowser.Position(5745,450)
+Gui.FormOrdUpload.cmdFileBrowser.Caption("^")
+Gui.FormOrdUpload.cmdFileBrowser.Event(Click,cmdFileBrowser_Click)
+Gui.FormOrdUpload.lvw1.Create(ListView)
+Gui.FormOrdUpload.lvw1.Size(5550,390)
+Gui.FormOrdUpload.lvw1.Position(105,465)
+Gui.FormOrdUpload.lvw1.View(0)
+Gui.FormOrdUpload.lvw1.Event(OLEDragDrop,lvw1_OLEDragDrop)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.sHost.Declare(String,"")
+V.Global.sUser.Declare(String,"")
+V.Global.sPass.Declare(String,"")
+V.Global.sPort.Declare(String,"")
+V.Global.sPick.Declare(String,"")
+V.Global.sDrop.Declare(String,"")
+V.Global.sProc.Declare(String,"")
+V.Global.sErrPath.Declare(String,"")
+V.Global.sCustomer.Declare(String,"")
+v.Global.sFolderDir.Declare(String,"")
+Program.External.Include.Library("ORDUPL.lib")
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.Ambient.IsInTaskScheduler)
+	F.Intrinsic.Control.CallSub(Load_Settings)
+
+	F.Intrinsic.Control.CallSub(Get_File)
+		
+F.Intrinsic.Control.Else
+	F.Intrinsic.Control.CallSub(Load_Settings)
+	'allow user to process error files 
+	Gui.FormOrdUpload..Show
+	
+	Gui.FormOrdUpload..WaitForDismiss
+		
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Order_Upload.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.cmdFileBrowser_Click.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+
+'when selecting from the browser only show csv files
+F.Intrinsic.UI.ShowOpenFileDialog("","TXT [.txt]|*.txt","",V.Local.sRet)
+
+'checking to see if a file was chosen
+F.Intrinsic.Control.If(V.Local.sRet,<>,"***CANCEL***")
+	Gui.FormOrdUpload..Visible(False)
+	'passing file location when user drops file in list view
+	F.Intrinsic.Control.CallSub(Process_Files,"Files",V.Local.sRet)
+F.Intrinsic.Control.EndIf
+	
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Order_Upload.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdFileBrowser_Click.End
+
+Program.Sub.lvw1_OLEDragDrop.Start
+F.Intrinsic.Control.SetErrorHandler("lvw1_OLEDragDrop_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormOrdUpload..Visible(False)
+'passing file location when user drops file in list view
+F.Intrinsic.Control.CallSub(Process_Files,"Files",V.Args.Files)
+	
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("lvw1_OLEDragDrop_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Order_Upload.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.lvw1_OLEDragDrop.End
+
+Program.Sub.Process_Files.Start
+F.Intrinsic.Control.SetErrorHandler("Process_Files_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.sFiles.Declare(String,"")
+V.Local.sMsg.Declare(String,"")
+V.Local.sFileType.Declare(String,"")
+V.Local.sFileContent.Declare(String,"")
+
+F.Intrinsic.UI.InvokeWaitDialog("Parsing Order File.......................")
+F.Intrinsic.UI.ChangeWaitStatus("Parsing Order File.......................")
+'listview allows multlipe files to be droped in
+'spliting the argument to process each file seperately
+F.Intrinsic.String.Split(V.Args.Files,"*!*",V.Local.sFiles)
+
+'looping through file liist
+F.Intrinsic.Control.For(V.Local.i,0,V.Local.sFiles.UBound,1)	
+	V.Local.sFileType.Set(V.Local.sFiles(V.Local.i).Right3)
+	F.Intrinsic.Control.If(V.Local.sFileType.UCase,=,"TXT")
+		F.Intrinsic.File.File2String(V.Local.sFiles(V.Local.i),V.Local.sFileContent)
+		F.Intrinsic.Control.If(V.Local.sFileContent.Length,>,0)
+			
+			'calling parse file to convert to a gss format csv file
+			F.Intrinsic.Control.CallSub(Parse_File,"File",V.Local.sFileContent,"FileName",V.Local.sFiles(V.Local.i))
+			F.Intrinsic.UI.CloseWaitDialog
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Else
+		F.Intrinsic.Control.If(V.Ambient.IsInTaskScheduler,=,False)
+			'letting user know that the file choosen was not a csv
+			F.Intrinsic.String.Build("{0} file must be a txt to be processed",V.Local.sFiles(V.Local.i),V.Local.sMsg)
+			F.Intrinsic.UI.Msgbox(V.Local.sMsg,"Attention")
+			F.Intrinsic.UI.CloseWaitDialog
+			Gui.FormOrdUpload..Show
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Next(V.Local.i)
+	
+F.Intrinsic.UI.CloseWaitDialog
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Process_Files_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Order_Upload.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Process_Files.End
+
+Program.Sub.Parse_File.Start
+F.Intrinsic.Control.SetErrorHandler("Parse_File_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sFields.Declare(String,"")
+V.Local.sTemp.Declare(String,"")
+V.Local.sData.Declare(String,"")
+V.Local.i.Declare(Long,0)
+V.Local.iD.Declare(Long,0)
+V.Local.iF.Declare(Long,0)
+V.Local.sTemp2.Declare(String,"")
+V.Local.sFilter.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.fAmtPrice.Declare(Float,0)
+V.Local.sRet.Declare(String,"")
+V.Local.sTarget.Declare(String,"")
+V.Local.iPO.Declare(Long,0)
+V.Local.sSubject.Declare(String,"")
+V.Local.sEmails.Declare(String,"")
+V.Local.sErrTarget.Declare(String,"")
+V.Local.sBody.Declare(String,"")
+V.Local.sUsers.Declare(String,"")
+V.Local.iDays.Declare(Long,0)
+V.Local.iHDays.Declare(Long,0)
+V.Local.iHol.Declare(Long,0)
+V.Local.dDueDate.Declare(Date)
+V.Local.sDueDate.Declare(String,"")
+V.Local.sWODueDate.Declare(String,"")
+V.Local.iTemp.Declare(Long,0)
+V.Local.sBoxNum.Declare(String,"")
+V.Local.iPackSize.Declare(Long,0)
+V.Local.sWOFile.Declare(String,"")
+V.Local.iSeq.Declare(Long,0)
+V.Local.sPallet.Declare(String,"")
+V.Local.iPalletSize.Declare(Long,0)
+V.Local.iBoxCount.Declare(Long,0)
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+F.ODBC.Connection!Con.ExecuteAndReturn("Select Top 1 PalletNum From GCG_6211_Serial_Data Order by PalletNum Desc",V.Local.sPallet)	
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.If(V.Local.sPallet.Trim,=,"9999999999")
+	V.Local.sPallet.Set("0000000001")
+F.Intrinsic.Control.Else
+	F.Intrinsic.Math.Add(v.Local.sPallet.Long,1,V.Local.sPallet)
+	F.Intrinsic.String.LPad(V.Local.sPallet,"0",10,V.Local.sPallet)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.String.Split(V.Args.FileName,"\",V.Local.sTarget)
+
+F.Intrinsic.String.Split(V.Args.FileName,"\",V.Local.sErrTarget)
+
+F.Intrinsic.String.Build("Error with File {0}",V.Local.sErrTarget(V.Local.sErrTarget.UBound).Trim,V.Local.sSubject)
+
+F.Intrinsic.Control.If(V.Global.sProc.Right1,=,"\")
+	F.Intrinsic.String.Build("{0}{1}",V.Global.sProc,V.Local.sTarget(V.Local.sTarget.UBound),V.Local.sTarget)
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Build("{0}\{1}",V.Global.sProc,V.Local.sTarget(V.Local.sTarget.UBound),V.Local.sTarget)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.If(V.Global.sErrPath.Right1,=,"\")
+	F.Intrinsic.String.Build("{0}{1}",V.Global.sErrPath,V.Local.sErrTarget(V.Local.sErrTarget.UBound),V.Local.sErrTarget)
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Build("{0}\{1}",V.Global.sErrPath,V.Local.sErrTarget(V.Local.sErrTarget.UBound),V.Local.sErrTarget)
+F.Intrinsic.Control.EndIf
+
+V.Local.sFields.Set("PONum*!*Order_Date*!*Col3*!*Col4*!*Plate*!*PackSize*!*Blank_1*!*Blank_2*!*Serial*!*OrderType*!*Blank_3*!*VehType*!*Blank_4*!*Blank_5*!*Blank_6*!*Blank_7*!*BoxNum*!*DueDate*!*Blank_8*!*Part")
+
+F.Intrinsic.String.Split(V.Local.sFields,"*!*",V.Local.sFields)
+
+F.Data.DataTable.Create("OrderUp",True)
+F.Data.DataTable.AddColumn("OrderUp","PONum",String)
+F.Data.DataTable.AddColumn("OrderUp","Order_Date",String)
+F.Data.DataTable.AddColumn("OrderUp","Part",String)
+F.Data.DataTable.AddColumn("OrderUp","Col3",String)
+F.Data.DataTable.AddColumn("OrderUp","Col4",String)
+F.Data.DataTable.AddColumn("OrderUp","Plate",String)
+F.Data.DataTable.AddColumn("OrderUp","PackSize",Long)
+F.Data.DataTable.AddColumn("OrderUp","Blank_1",String)
+F.Data.DataTable.AddColumn("OrderUp","Blank_2",String)
+F.Data.DataTable.AddColumn("OrderUp","Serial",String)
+F.Data.DataTable.AddColumn("OrderUp","OrderType",String)
+F.Data.DataTable.AddColumn("OrderUp","Blank_3",String)
+F.Data.DataTable.AddColumn("OrderUp","VehType",String)
+F.Data.DataTable.AddColumn("OrderUp","Blank_4",String)
+F.Data.DataTable.AddColumn("OrderUp","Blank_5",String)
+F.Data.DataTable.AddColumn("OrderUp","Blank_6",String)
+F.Data.DataTable.AddColumn("OrderUp","Blank_7",String)
+F.Data.DataTable.AddColumn("OrderUp","BoxNum",String)
+F.Data.DataTable.AddColumn("OrderUp","DueDate",String)
+F.Data.DataTable.AddColumn("OrderUp","Blank_8",String)
+F.Data.DataTable.AddColumn("OrderUp","Order_No",String)
+F.Data.DataTable.AddColumn("OrderUp","Record_No",String)
+F.Data.DataTable.AddColumn("OrderUp","Amt_Price",Float)
+F.Data.DataTable.AddColumn("Orderup","Inv_Part",String)
+F.Data.DataTable.AddColumn("Orderup","Exported",Boolean)
+F.Data.DataTable.AddColumn("OrderUp","Job",String)
+F.Data.DataTable.AddColumn("OrderUp","Suffix",String)
+F.Data.DataTable.AddColumn("Orderup","WIP",Boolean)
+F.Data.DataTable.AddColumn("Orderup","Batch_Size",Long)
+F.Data.DataTable.AddColumn("Orderup","PalletNum",String)
+F.Data.DataTable.AddColumn("Orderup","Seq",String)
+
+F.Data.DataTable.AddExpressionColumn("OrderUp","KEY",String,"Part+OrderType")
+
+F.Intrinsic.String.Split(V.Args.File,V.Ambient.NewLine,V.Local.sTemp)
+
+F.Intrinsic.Control.For(V.Local.i,0,V.Local.sTemp.UBound,1)
+	F.Intrinsic.Math.Add(V.Local.iSeq,1,V.Local.iSeq)
+	F.Intrinsic.String.Split(V.Local.sTemp(V.Local.i),",",V.Local.sData)
+	V.Local.iF.Set(0)
+	F.Intrinsic.Control.If(V.Local.sData.Trim,<>,"")
+		F.Intrinsic.Control.For(V.Local.iD,0,V.Local.sData.UBound,1)
+			F.Intrinsic.Control.If(V.Local.iD,=,0)
+				F.Data.DataTable.AddRow("OrderUp","PONum",V.Local.sData(V.Local.iD).Trim,"Seq",V.Local.iSeq)
+				F.Intrinsic.Math.Add(V.Local.iF,1,V.Local.iF)
+			F.Intrinsic.Control.Else
+				F.Intrinsic.Control.If(V.Local.iD,=,2)
+					F.Intrinsic.String.Build("{1}-{0}",V.Local.sData(2).Trim,V.Local.sData(3).Trim,V.Local.sTemp2)
+					F.Data.DataTable.SetValue("OrderUp",V.DataTable.OrderUp.RowCount--,"Part",V.Local.sTemp2,V.Local.sFields(V.Local.iF),V.Local.sData(V.Local.iD).Trim)
+					F.Intrinsic.Math.Add(V.Local.iF,1,V.Local.iF)
+				F.Intrinsic.Control.Else
+					F.Data.DataTable.SetValue("OrderUp",V.DataTable.OrderUp.RowCount--,V.Local.sFields(V.Local.iF),V.Local.sData(V.Local.iD).Trim)
+					F.Intrinsic.Math.Add(V.Local.iF,1,V.Local.iF)	
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Next(V.Local.iD)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Next(V.Local.i)
+
+'getting list of distinct part, packsize, order type
+F.Data.DataView.Create("OrderUp","VOrderUp",22,"Part <> ''","")
+F.Data.DataView.ToDataTableDistinct("OrderUp","VOrderUp","PONUM","PONUM",True)
+F.Data.DataView.ToDataTableDistinct("OrderUp","VOrderUp","PartSizeOrder","Part*!*Packsize*!*OrderType*!*PONUM",True)
+F.Data.DataView.Close("OrderUp","VOrderUp")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+V.Local.sSql.Set("Select rtrim(Part)+rtrim(OrderType) as KeyValue, SinglePrice From GCG_6211_Type_Price")
+F.Data.Dictionary.CreateFromSQL("Amt","con",V.Local.sSql)
+F.Data.Dictionary.SetDefaultReturn("Amt","0.0000000000001")
+F.Data.DataTable.FillFromDictionary("OrderUp","Amt","Key","Amt_Price")
+F.Data.Dictionary.Close("Amt")
+
+'this is done cause if you set null as the default return the Key field is used on the fill from dictionary.
+F.Data.DataView.Create("OrderUp","VTemp",22,"Amt_Price = 0.0000000000001","")
+F.Data.DataView.SetValue("OrderUp","VTemp",-1,"Amt_Price",V.Ambient.DBNull)
+F.Data.DataView.Close("OrderUp","VTemp")
+
+V.Local.sSql.Set("Select rtrim(Part), 'Y' From V_Inventory_Mstr")
+F.Data.Dictionary.CreateFromSQL("Inv","con",V.Local.sSql)
+F.Data.Dictionary.SetDefaultReturn("Inv","N")
+F.Data.DataTable.FillFromDictionary("OrderUp","Inv","Part","Inv_Part")
+F.Data.Dictionary.Close("Inv")
+	
+F.Data.DataView.Create("Orderup","NoAmt",22,"Amt_Price is Null","")
+F.Data.DataView.Create("Orderup","NoPart",22,"Inv_Part = 'N'","")
+
+F.Data.DataTable.SetValue("Orderup",-1,"BoxNum","")
+
+F.Intrinsic.Control.If(V.DataView.OrderUp!NoAmt.RowCount--,=,-1,"AND",V.DataView.OrderUp!NoPart.RowCount--,=,-1)
+	F.Intrinsic.Control.For(V.Local.iPO,0,V.DataTable.PONUM.RowCount--,1)
+		F.Intrinsic.String.Build("PONum = '{0}'",V.DataTable.PONUM(V.Local.iPO).PONUM!FieldValTrim,V.Local.sFilter)
+		F.Data.DataView.Create("PartSizeOrder","VPartSizeOrder",22,V.Local.sFilter,"")
+		F.Intrinsic.Control.For(V.Local.i,0,V.DataView.PartSizeOrder!VPartSizeOrder.RowCount--,1)
+			F.Intrinsic.String.Left(V.DataView.PartSizeOrder!VPartSizeOrder(V.Local.i).PONUM!FIELDVALTRIM,"2",V.Local.iDays)
+			F.Intrinsic.Date.DateAddWorkdays(V.Ambient.Date,v.Local.iDays,V.Local.dDueDate)
+			'Check if Holidays exists between today's date and Due Date if so get total Holiday Days and add to iDays and get new Due Date
+			F.Intrinsic.Control.For(V.Local.iHol,1,30,1)
+				F.Intrinsic.String.Build("Select Cast(1 as Int) as Hol From V_Holiday_Sched Where Holiday_{0} between '{1}' and '{2}'",V.Local.iHol,V.Ambient.Date.PervasiveDate,V.Local.dDueDate.PervasiveDate,V.Local.sSql)
+				F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.iTemp)
+				F.Intrinsic.Math.Add(V.Local.iHDays,V.Local.iTemp,V.Local.iHDays)
+				F.Intrinsic.String.Build("Select Cast(1 as Int) as Hol From GCG_6211_C_HOL_SCHED Where Holiday_{0} between '{1}' and '{2}'",V.Local.iHol,V.Ambient.Date.PervasiveDate,V.Local.dDueDate.PervasiveDate,V.Local.sSql)
+				F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.iTemp)
+				F.Intrinsic.Math.Add(V.Local.iHDays,V.Local.iTemp,V.Local.iHDays)
+			F.Intrinsic.Control.Next(V.Local.iHol)
+			F.Intrinsic.Control.If(v.Local.iHDays,>,0)
+				f.Intrinsic.Math.Add(v.Local.iDays,V.Local.iHDays,V.Local.iDays)
+				F.Intrinsic.Date.DateAddWorkdays(V.Ambient.Date,v.Local.iDays,V.Local.dDueDate)
+			f.Intrinsic.Control.EndIf
+
+			F.Intrinsic.String.Format(V.Local.dDueDate,"MM/DD/YYYY",V.Local.sWODueDate)
+			F.Intrinsic.String.Format(V.Local.dDueDate,"YYYYMMDD",V.Local.sDueDate)
+			
+			F.Intrinsic.String.Build("Select Top 1 PackPerBox From GCG_6211_Type_Price Where Part = '{0}'",V.DataView.PartSizeOrder!VPartSizeOrder(V.Local.i).Part!FieldValTrim,V.Local.sSql)
+			F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.iPackSize)
+			
+			F.Intrinsic.String.Build("Select Top 1 BoxesPerPallet From GCG_6211_Type_Price Where Part = '{0}'",V.DataView.PartSizeOrder!VPartSizeOrder(V.Local.i).Part!FieldValTrim,V.Local.sSql)
+			F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.iPalletSize)
+
+			F.Intrinsic.String.Build("Part = '{0}' and Packsize = {1} and OrderType = '{2}' and PONUM = '{3}' and (BoxNum = '' or BoxNum is Null)",V.DataView.PartSizeOrder!VPartSizeOrder(V.Local.i).Part!FieldValTrim,V.DataView.PartSizeOrder!VPartSizeOrder(V.Local.i).Packsize!FieldVal,V.DataView.PartSizeOrder!VPartSizeOrder(V.Local.i).OrderType!FieldValTrim,V.DataTable.PONUM(V.Local.iPO).PONUM!FieldValTrim,V.Local.sFilter)
+			F.Data.DataView.Create("OrderUp","VBoxOrderUp",22,V.Local.sFilter,"")
+			
+			V.Local.iTemp.Set(1)
+			V.Local.iBoxCount.Set(1)
+			F.Intrinsic.Control.DoUntil(V.DataView.OrderUp!VBoxOrderUp.RowCount--,=,-1)
+				F.Intrinsic.Control.If(V.Local.iTemp,=,1)
+					F.Intrinsic.Control.Try
+						F.ODBC.Connection!Con.GetID("GCG_6211_LAST_BOXNUM","Last_BoxNum",True,V.Local.sBoxNum.Long)
+					F.Intrinsic.Control.Catch
+						V.Local.sBoxNum.Set("0000000001")
+					F.Intrinsic.Control.EndTry
+					F.Intrinsic.String.Format(V.Local.sBoxNum,"0000000000",V.Local.sBoxNum)
+					F.Intrinsic.Control.If(V.Local.sBoxNum,=,"0000000000")
+						V.Local.sBoxNum.Set("0000000001")
+					F.Intrinsic.Control.EndIf
+					F.Intrinsic.Control.If(V.Local.sBoxNum.Long,=,1)
+						F.ODBC.Connection!Con.Execute("Delete From GCG_6211_Last_BoxNum")
+						F.Intrinsic.String.Build("Insert Into GCG_6211_Last_BoxNum Values ('{0}')",V.Local.sBoxNum,V.Local.sSql)
+					F.Intrinsic.Control.Else
+						F.Intrinsic.String.Build("Update GCG_6211_Last_BoxNum Set Last_BoxNum = '{0}'",V.Local.sBoxNum,V.Local.sSql)
+					F.Intrinsic.Control.EndIf
+					F.ODBC.Connection!Con.Execute(V.Local.sSql)
+				F.Intrinsic.Control.EndIf
+				F.Data.DataView.SetValue("OrderUp","VBoxOrderUp",0,"PalletNum",V.Local.sPallet,"BoxNum",V.Local.sBoxNum)
+				F.Intrinsic.Math.Add(V.Local.iBoxCount,1,V.Local.iBoxCount)
+				F.Intrinsic.Control.If(V.Local.iBoxCount,>,V.Local.iPalletSize)
+					V.Local.iBoxCount.Set(1)
+					F.Intrinsic.Math.Add(V.Local.sPallet.Long,1,V.Local.sPallet)
+					F.Intrinsic.String.Format(V.Local.sPallet,"0000000000",V.Local.sPallet)
+					F.Intrinsic.Control.If(V.Local.sPallet.Right10,=,"0000000000")
+						V.Local.sPallet.Set("0000000001")
+					F.Intrinsic.Control.EndIf
+				F.Intrinsic.Control.EndIf
+				F.Intrinsic.Math.Add(V.Local.iTemp,1,V.Local.iTemp)
+				F.Intrinsic.Control.If(V.Local.iTemp,>,V.Local.iPackSize)
+					V.Local.iTemp.Set(1)
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.Loop
+
+			F.Data.DataView.Close("Orderup","VBoxOrderUp")
+			
+			F.Intrinsic.String.Build("Part = '{0}' and Packsize = {1} and OrderType = '{2}' and PONUM = '{3}'",V.DataView.PartSizeOrder!VPartSizeOrder(V.Local.i).Part!FieldValTrim,V.DataView.PartSizeOrder!VPartSizeOrder(V.Local.i).Packsize!FieldVal,V.DataView.PartSizeOrder!VPartSizeOrder(V.Local.i).OrderType!FieldValTrim,V.DataTable.PONUM(V.Local.iPO).PONUM!FieldValTrim,V.Local.sFilter)
+			F.Data.DataView.Create("OrderUp","VOrderUp",22,V.Local.sFilter,"")
+			
+			F.Data.DataView.SetValue("Orderup","VOrderUp",-1,"DueDate",V.Local.sDueDate,"Blank_8","1")
+			
+			F.Intrinsic.Control.If(V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Packsize!FieldValLong,=,1)
+				F.Intrinsic.String.Build("Select Top 1 SinglePrice From GCG_6211_Type_Price Where Part = '{0}' and OrderType = '{1}'",V.DataView.PartSizeOrder!VPartSizeOrder(V.Local.i).Part!FieldValTrim,V.DataView.PartSizeOrder!VPartSizeOrder(V.Local.i).OrderType!FieldValTrim,V.Local.sSql)
+				F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.fAmtPrice)
+				F.Data.DataView.SetValue("Orderup","VOrderUp",-1,"Amt_Price",V.Local.fAmtPrice)
+			F.Intrinsic.Control.ElseIf(V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Packsize!FieldValLong,=,2)
+				F.Intrinsic.String.Build("Select Top 1 PairPrice From GCG_6211_Type_Price Where Part = '{0}' and OrderType = '{1}'",V.DataView.PartSizeOrder!VPartSizeOrder(V.Local.i).Part!FieldValTrim,V.DataView.PartSizeOrder!VPartSizeOrder(V.Local.i).OrderType!FieldValTrim,V.Local.sSql)
+				F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.fAmtPrice)
+				F.Data.DataView.SetValue("Orderup","VOrderUp",-1,"Amt_Price",V.Local.fAmtPrice)
+			F.Intrinsic.Control.ElseIf(V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Packsize!FieldValLong,=,3)
+				F.Intrinsic.String.Build("Select Top 1 TrioPrice From GCG_6211_Type_Price Where Part = '{0}' and OrderType = '{1}'",V.DataView.PartSizeOrder!VPartSizeOrder(V.Local.i).Part!FieldValTrim,V.DataView.PartSizeOrder!VPartSizeOrder(V.Local.i).OrderType!FieldValTrim,V.Local.sSql)
+				F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.fAmtPrice)
+				F.Data.DataView.SetValue("Orderup","VOrderUp",-1,"Amt_Price",V.Local.fAmtPrice)
+			F.Intrinsic.Control.Else
+				V.Local.fAmtPrice.Set("0.0000000000001")
+				F.Data.DataView.SetValue("Orderup","VOrderUp",-1,"Amt_Price",V.Local.fAmtPrice)
+			F.Intrinsic.Control.EndIf
+			
+			F.Intrinsic.Control.If(V.Local.i,=,0)
+				F.Intrinsic.Control.CallSub(SO_Hdr)
+				F.Intrinsic.Control.CallSub(SO_Lines,"Cost",V.Local.fAmtPrice)
+			F.Intrinsic.Control.Else
+				F.Intrinsic.Control.CallSub(SO_Lines,"Cost",V.Local.fAmtPrice)
+			F.Intrinsic.Control.EndIf
+						
+			F.Data.DataView.Close("OrderUp","VOrderUp")
+		F.Intrinsic.Control.Next(V.Local.i)
+
+		F.Intrinsic.Control.If(V.DataTable.ORDUPL.RowCount--,<>,-1)
+			f.Intrinsic.UI.ChangeWaitStatus("Creating Sales Order......................")
+			F.Intrinsic.Control.CallSub(ORDUPLCreateFile)
+			F.Intrinsic.Control.CallSub(ORDUPLSync)
+		F.Intrinsic.Control.EndIf
+		
+		F.Intrinsic.String.Build("Select Top 1 Order_No From V_Order_Header Where Customer_PO = '{0}' Order by Date_Order Desc",V.DataTable.OrderUp(V.DataTable.OrderUp.RowCount--).PONUM!FieldValTrim,V.Local.sSql)
+		F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sData)
+		
+		F.Data.DataTable.SetValue("OrderUp",-1,"Order_No",V.Local.sData.Trim,"Amt_Price",V.Local.fAmtPrice)
+		
+		F.Intrinsic.Control.For(V.Local.i,0,V.DataTable.PartSizeOrder.RowCount--,1)
+			F.Intrinsic.String.Build("Part = '{0}' and Packsize = {1} and OrderType = '{2}'",V.DataTable.PartSizeOrder(V.Local.i).Part!FieldValTrim,V.DataTable.PartSizeOrder(V.Local.i).Packsize!FieldVal,V.DataTable.PartSizeOrder(V.Local.i).OrderType!FieldValTrim,V.Local.sFilter)
+			F.Data.DataView.Create("OrderUp","VOrderUp",22,V.Local.sFilter,"")
+			
+			F.Intrinsic.String.Build("Select Record_No From V_Order_Lines Where Order_No = '{0}' and Part = '{1}'",V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Order_No!FieldValTrim,V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Part!FieldValTrim,V.Local.sSql)
+			F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sData)
+		
+			F.Data.DataView.SetValue("OrderUp","VOrderUp",-1,"Record_No",V.Local.sData.Trim)
+
+			'creating WO
+			F.Intrinsic.Control.If(V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Order_No!FieldValTrim,<>,"","AND",V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Record_No!FieldValTrim,<>,"")
+				f.Intrinsic.UI.ChangeWaitStatus("Creating Work Order......................")
+				F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!*{7}*!* *!*{5}*!*{6}",V.DataView.PartSizeOrder!VPartSizeOrder(V.Local.i).Part!FieldValTrim,"","",V.Local.sWODueDate,V.DataView.OrderUp!VOrderUp.RowCount,V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Order_No!FieldValTrim,V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Record_No!FieldValTrim,V.DataView.PartSizeOrder!VPartSizeOrder(V.Local.i).Part!FieldValTrim,V.Local.sWOFile)
+				F.Intrinsic.Control.CallSub(CreateWO,"WOFILE",V.Local.sWOFile,"Order",V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Order_No!FieldValTrim,"Record_No",V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Record_No!FieldValTrim)
+				F.Data.DataView.SetValue("OrderUp","VOrderUp",-1,"Job",V.Args.Job,"Suffix",V.Args.Suffix)
+			F.Intrinsic.Control.EndIf
+			
+			F.Data.DataView.Close("OrderUp","VOrderUp")
+			
+		F.Intrinsic.Control.Next(V.Local.i)
+		
+		F.Data.DataTable.AcceptChanges("ORDUPL")
+		F.Data.DataTable.AcceptChanges("ORDUPLExtra")
+		F.Data.DataTable.AcceptChanges("ORDUPLLines")
+	F.Intrinsic.Control.Next(V.Local.iPO)
+	
+	f.Intrinsic.UI.ChangeWaitStatus("Saving Plate Info......................")
+	
+	F.Data.DataTable.SetValue("OrderUp",-1,"Exported",False,"WIP",False,"Batch_Size",0)
+	
+	F.Data.DataTable.SaveToDB("OrderUp","con","GCG_6211_Serial_Data","",128,"PONUM@!@PONUM*!*ORDER_DATE@!@ORDER_DATE*!*PART@!@PART*!*PACKSIZE@!@PACKSIZE*!*ORDERTYPE@!@ORDERTYPE*!*SERIAL@!@SERIAL*!*VEHTYPE@!@VEHTYPE*!*BOXNUM@!@BOXNUM*!*DUEDATE@!@DUEDATE*!*ORDER_NO@!@ORDER_NO*!*RECORD_NO@!@RECORD_NO*!*Amt_Price@!@Amt_Price*!*PLATE@!@PLATE*!*Col3@!@Col3*!*Col4@!@Col4*!*Blank_1@!@Blank_1*!*Blank_2@!@Blank_2*!*Blank_3@!@Blank_3*!*Blank_4@!@Blank_4*!*Blank_5@!@Blank_5*!*Blank_6@!@Blank_6*!*Blank_7@!@Blank_7*!*Blank_8@!@Blank_8*!*Exported@!@Exported*!*Job@!@Job*!*Suffix@!@Suffix*!*WIP@!@WIP*!*BATCH_SIZE@!@BATCH_SIZE*!*PALLETNUM@!@PALLETNUM*!*SEQ@!@SEQ")
+	
+	F.Intrinsic.File.MoveFile(V.Args.FileName,V.Local.sTarget,V.Local.i)
+F.Intrinsic.Control.Else
+	V.Local.sData.Set("")
+	F.Intrinsic.Control.For(V.Local.i,0,V.DataView.OrderUp!NoAmt.RowCount--,1)
+		F.Intrinsic.Control.If(V.Local.sData.Trim,=,"")
+			F.Intrinsic.String.Build("List of Part, Pack Size and Order Type without a Amt Price{0}Part: {1}, Pack Size: {2}, Order Type: {3}",V.Ambient.NewLine,V.DataView.OrderUp!NoAmt(V.Local.i).Part!FieldValTrim,V.DataView.OrderUp!NoAmt(V.Local.i).PackSize!FieldVal,V.DataView.OrderUp!NoAmt(V.Local.i).OrderType!FieldValTrim,V.Local.sData)
+		F.Intrinsic.Control.Else
+			F.Intrinsic.String.Build("{4}{0}Part: {1}, Pack Size: {2}, Order Type: {3}",V.Ambient.NewLine,V.DataView.OrderUp!NoAmt(V.Local.i).Part!FieldValTrim,V.DataView.OrderUp!NoAmt(V.Local.i).PackSize!FieldVal,V.DataView.OrderUp!NoAmt(V.Local.i).OrderType!FieldValTrim,V.Local.sData,V.Local.sData)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Next(V.Local.i)
+	
+	F.Intrinsic.Control.If(v.Local.sData,<>,"")
+		V.Local.sBody.Set(V.Local.sData.Trim)
+		V.Local.sData.Set("")
+	F.Intrinsic.Control.EndIf
+	
+	F.Intrinsic.Control.For(V.Local.i,0,V.DataView.OrderUp!NoPart.RowCount--,1)
+		F.Intrinsic.Control.If(V.Local.sData.Trim,=,"")
+			F.Intrinsic.String.Build("List of Parts that need to be created in Global Shop{0}Part: {1}",V.Ambient.NewLine,V.DataView.OrderUp!NoPart(V.Local.i).Part!FieldValTrim,V.Local.sData)
+		F.Intrinsic.Control.Else
+			F.Intrinsic.String.Build("{2}{0}Part: {1}",V.Ambient.NewLine,V.DataView.OrderUp!NoPart(V.Local.i).Part!FieldValTrimV.Local.sData,V.Local.sData)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Next(V.Local.i)
+	
+	F.Intrinsic.String.Build("{0}{1}{2}{1}Error Location:{3}",V.Local.sBody,V.Ambient.NewLine,V.Local.sData,V.Local.sErrTarget,V.Local.sBody)
+	
+	F.Global.Security.GetGroupEmails("ORDERR",V.Caller.CompanyCode,V.Local.sEmails)
+	
+	f.Global.Security.GetUserId(v.Caller.User,v.Caller.CompanyCode,v.local.iD)
+	
+	F.Intrinsic.String.Split(V.Local.sEmails,"*!*",V.Local.sEmails)
+	F.Intrinsic.Control.For(V.Local.i,0,V.Local.sEmails.UBound,1)
+		F.Global.Messaging.QueueMessage(V.Caller.CompanyCode,V.Local.iD,V.Caller.Caller,v.Local.sSubject,"NoReply@maconresources.org",V.Local.sEmails(V.Local.i).Trim,v.Local.sBody,-1,"",False,"","","","","","","","",True)
+	F.Intrinsic.Control.Next(V.Local.i)
+	F.Intrinsic.Control.If(V.Args.FileName,<>,V.Local.sErrTarget)
+		F.Intrinsic.File.MoveFile(V.Args.FileName,V.Local.sErrTarget,V.Local.i)
+	F.Intrinsic.Control.EndIf
+	
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!Con.Close
+	
+F.Data.DataTable.Close("PartSizeOrder")
+F.Data.DataTable.Close("PONUM")
+
+F.Data.DataView.Close("Orderup","NoAmt")
+F.Data.DataView.Close("Orderup","NoPart")
+F.Data.DataTable.Close("OrderUp")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Parse_File_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Order_Upload.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Parse_File.End
+
+Program.Sub.Load_Settings.Start
+F.Intrinsic.Control.SetErrorHandler("Load_Settings_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+v.Local.sTemp.Declare(String,"")
+V.Local.baValue.Declare(ByteArray)
+V.Local.bRet.Declare(Boolean,False)
+V.Local.sGssParam.Declare(String,"")
+V.Local.sGss.Declare(String,"")
+V.Local.sTemp2.Declare(String,"")
+V.Local.sDir.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+
+F.ODBC.Connection!Con.OpenCompanyConnection
+
+F.Intrinsic.String.Build("Select Customer From GCG_6211_C_HOL_SCHED Where Company = '{0}'",V.Caller.CompanyCode,V.Local.sSql)
+
+F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Global.sCustomer)
+
+F.ODBC.Connection!Con.Close
+
+F.Intrinsic.Control.If(V.Caller.GlobalDir.Right1,=,"\")
+	F.Intrinsic.String.Build("{0}Custom",V.Caller.GlobalDir,V.Local.sTemp)
+	F.Intrinsic.String.Build("{0}FILES\GSSPARAM.txt",V.Caller.GlobalDir,V.Local.sGssParam)
+	F.Intrinsic.String.Build("{0}WEB\",V.Caller.GlobalDir,V.Local.sTemp2)
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Build("{0}\Custom",V.Caller.GlobalDir,V.Local.sTemp)
+	F.Intrinsic.String.Build("{0}\FILES\GSSPARAM.txt",V.Caller.GlobalDir,V.Local.sGssParam)
+	F.Intrinsic.String.Build("{0}\WEB\",V.Caller.GlobalDir,V.Local.sTemp2)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.File.DirExists(V.Local.sTemp,V.Local.bRet)
+
+F.Intrinsic.Control.If(v.Local.bRet,=,False)
+	F.Intrinsic.File.CreateDir(V.Local.sTemp)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.File.Exists(V.Local.sGssParam,V.Local.bRet)
+F.Intrinsic.Control.If(V.Local.bRet,=,False)
+	F.Intrinsic.String.Build("WEB ORDER DIRECTORY   = {0}WebOrder",V.Local.sTemp2,V.Local.sTemp)
+	F.Intrinsic.String.Build("{0}WebOrder",V.Local.sTemp2,V.Local.sDir)
+	
+	F.Intrinsic.File.DirExists(V.Local.sDir,V.Local.bRet)
+	F.Intrinsic.Control.If(V.Local.bRet,=,False)
+		F.Intrinsic.File.CreateDir(V.Local.sDir)
+	F.Intrinsic.Control.EndIf
+	
+	V.Local.sGss.Set(V.Local.sTemp)
+	
+	F.Intrinsic.String.Build("WEB ERROR DIRECTORY   = {0}WebError",V.Local.sTemp2,V.Local.sTemp)
+	F.Intrinsic.String.Build("{0}{1}{2}",V.Local.sGss,V.Ambient.NewLine,V.Local.sTemp,V.Local.sGss)
+	
+	F.Intrinsic.String.Build("{0}WebError",V.Local.sTemp2,V.Local.sDir)
+	
+	F.Intrinsic.File.DirExists(V.Local.sDir,V.Local.bRet)
+	F.Intrinsic.Control.If(V.Local.bRet,=,False)
+		F.Intrinsic.File.CreateDir(V.Local.sDir)
+	F.Intrinsic.Control.EndIf
+	
+	F.Intrinsic.String.Build("WEB CONVERTED DIR     = {0}WebConv",V.Local.sGss,V.Ambient.NewLine,V.Local.sGss)
+	F.Intrinsic.String.Build("{0}{1}{2}",V.Local.sGss,V.Ambient.NewLine,V.Local.sTemp,V.Local.sGss)
+	
+	F.Intrinsic.String.Build("{0}WebConv",V.Local.sTemp2,V.Local.sDir)
+	
+	F.Intrinsic.File.DirExists(V.Local.sDir,V.Local.bRet)
+	F.Intrinsic.Control.If(V.Local.bRet,=,False)
+		F.Intrinsic.File.CreateDir(V.Local.sDir)
+	F.Intrinsic.Control.EndIf
+	
+	F.Intrinsic.String.Build("WEB UPLOADED DIRECTORY= {0}WebUp",V.Local.sGss,V.Ambient.NewLine,V.Local.sGss)
+	F.Intrinsic.String.Build("{0}{1}{2}",V.Local.sGss,V.Ambient.NewLine,V.Local.sTemp,V.Local.sGss)
+	
+	F.Intrinsic.String.Build("{0}WebUp",V.Local.sTemp2,V.Local.sDir)
+	
+	F.Intrinsic.File.DirExists(V.Local.sDir,V.Local.bRet)
+	F.Intrinsic.Control.If(V.Local.bRet,=,False)
+		F.Intrinsic.File.CreateDir(V.Local.sDir)
+	F.Intrinsic.Control.EndIf
+	
+	F.Intrinsic.String.Build("{0}{1}EMAIL FROM ADDRESS    = ",V.Local.sGss,V.Ambient.NewLine,V.Local.sGss)
+	F.Intrinsic.String.Build("{0}{1}{2}",V.Local.sGss,V.Ambient.NewLine,V.Local.sTemp,V.Local.sGss)
+	F.Intrinsic.String.Build("{0}{1}EMAIL TO ADDRESS      = ",V.Local.sGss,V.Ambient.NewLine,V.Local.sGss)
+	F.Intrinsic.String.Build("{0}{1}{2}",V.Local.sGss,V.Ambient.NewLine,V.Local.sTemp,V.Local.sGss)
+	
+	F.Intrinsic.File.String2File(V.Local.sGssParam,V.Local.sGss)
+	
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.String.Build("{0}\Custom\6211",V.Caller.GlobalDir,V.Local.sTemp)
+
+F.Intrinsic.File.DirExists(V.Local.sTemp,V.Local.bRet)
+
+F.Intrinsic.Control.If(v.Local.bRet,=,False)
+	F.Intrinsic.File.CreateDir(V.Local.sTemp)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.String.Build("{0}\Custom\6211\Proc_Files",V.Caller.GlobalDir,V.Local.sTemp)
+
+F.Intrinsic.File.DirExists(V.Local.sTemp,V.Local.bRet)
+
+F.Intrinsic.Control.If(v.Local.bRet,=,False)
+	F.Intrinsic.File.CreateDir(V.Local.sTemp)
+F.Intrinsic.Control.EndIf
+
+V.Global.sFolderDir.Set(V.Local.sTemp)
+
+f.ODBC.Connection!con.OpenCompanyConnection
+f.Data.DataTable.CreateFromSQL("sftpSettingsDT", "con", "Select * from GCG_6211_Settings")
+f.ODBC.Connection!con.Close
+
+f.Intrinsic.Control.If(v.DataTable.sftpSettingsDT.RowCount, =, 0)
+	f.Intrinsic.Control.ExitSub
+f.Intrinsic.Control.ElseIf(v.DataTable.sftpSettingsDT.RowCount, >, 1)
+	f.Intrinsic.UI.Msgbox("Multiple Settings found. Please Contact Gloabl Shop for assistance.")
+	f.Intrinsic.Control.ExitSub
+f.Intrinsic.Control.EndIf
+
+v.Local.sTemp.Set(v.DataTable.sftpSettingsDT(0).RemoteHost!FieldVal)
+F.Intrinsic.String.ConvertString2BA(V.Local.sTemp.Trim,V.Local.baValue)
+F.Global.Encryption.Decrypt(V.Local.baValue,V.Local.sTemp)
+V.Global.sHost.Set(v.Local.sTemp)
+
+v.Local.sTemp.Set(v.DataTable.sftpSettingsDT(0).RemoteUser!FieldVal)
+F.Intrinsic.String.ConvertString2BA(V.Local.sTemp.Trim,V.Local.baValue)
+F.Global.Encryption.Decrypt(V.Local.baValue,V.Local.sTemp)
+V.Global.sUser.Set(v.Local.sTemp)
+
+v.Local.sTemp.Set(v.DataTable.sftpSettingsDT(0).RemotePassword!FieldVal)
+F.Intrinsic.String.ConvertString2BA(V.Local.sTemp.Trim,V.Local.baValue)
+F.Global.Encryption.Decrypt(V.Local.baValue,V.Local.sTemp)
+V.Global.sPass.Set(v.Local.sTemp)
+
+v.Local.sTemp.Set(v.DataTable.sftpSettingsDT(0).RemotePort!FieldVal)
+F.Intrinsic.String.ConvertString2BA(V.Local.sTemp.Trim,V.Local.baValue)
+F.Global.Encryption.Decrypt(V.Local.baValue,V.Local.sTemp)
+V.Global.sPort.Set(v.Local.sTemp)
+
+v.Local.sTemp.Set(v.DataTable.sftpSettingsDT(0).Pickup_Path!FieldVal)
+F.Intrinsic.String.ConvertString2BA(V.Local.sTemp.Trim,V.Local.baValue)
+F.Global.Encryption.Decrypt(V.Local.baValue,V.Local.sTemp)
+V.Global.sPick.Set(v.Local.sTemp)
+
+V.Local.sTemp.Set(v.DataTable.sftpSettingsDT(0).Dropoff_Path!FieldVal)
+F.Intrinsic.String.ConvertString2BA(V.Local.sTemp.Trim,V.Local.baValue)
+F.Global.Encryption.Decrypt(V.Local.baValue,V.Local.sTemp)
+V.Global.sDrop.Set(v.Local.sTemp)
+
+v.Local.sTemp.Set(v.DataTable.sftpSettingsDT(0).Proc_Path!FieldVal)
+F.Intrinsic.String.ConvertString2BA(V.Local.sTemp.Trim,V.Local.baValue)
+F.Global.Encryption.Decrypt(V.Local.baValue,V.Local.sTemp)
+V.Global.sProc.Set(v.Local.sTemp)
+
+v.Local.sTemp.Set(v.DataTable.sftpSettingsDT(0).Error_Path!FieldVal)
+F.Intrinsic.String.ConvertString2BA(V.Local.sTemp.Trim,V.Local.baValue)
+F.Global.Encryption.Decrypt(V.Local.baValue,V.Local.sTemp)
+V.Global.sErrPath.Set(v.Local.sTemp)
+
+f.Data.DataTable.Close("sftpSettingsDT")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Load_Settings_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Order_Upload.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Load_Settings.End
+
+Program.Sub.Exit.Start
+F.Intrinsic.Control.SetErrorHandler("Exit_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Intrinsic.Control.If(V.ODBC.Con.State,=,1)
+	F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Exit_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+Program.Sub.Exit.End
+
+Program.Sub.Get_File.Start
+F.Intrinsic.Control.SetErrorHandler("Get_File_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sFiles.Declare(String,"")
+
+'you have to create this sub in your script.
+F.Intrinsic.Control.AddEventHandler("SFTPDirList","Listdir")
+
+'logon credentials.
+f.Communication.SFTP.SetProperty("SSHAcceptServerAuthentication","true")
+f.Communication.SFTP.SetProperty("remoteHost", v.Global.sHost.Trim)
+f.Communication.SFTP.SetProperty("User", v.Global.sUser.Trim)
+f.Communication.SFTP.SetProperty("Password", v.Global.sPass.Trim)
+f.Communication.SFTP.SetProperty("remotePort", v.Global.sPort)
+f.Communication.SFTP.Logon
+f.Communication.SFTP.SetProperty("RemotePath", v.Global.sPick)
+
+'this will fire the event handler sub ListDir for each file listed in the shares/nce folder. 
+F.Communication.SFTP.ListDirectory
+
+f.Communication.SFTP.Logoff		
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Get_File_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Order_Upload.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Get_File.End
+
+Program.Sub.Listdir.Start
+F.Intrinsic.Control.SetErrorHandler("Listdir_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+v.Local.sTemp.Declare(String,"")
+V.Local.sFile.Declare(String,"")
+V.Local.dFileDate.Declare(Date)
+V.Local.dPrior.Declare(Date)
+
+V.Local.sFile.Set(v.Args.Filename.UCase)
+
+F.Intrinsic.UI.InvokeWaitDialog("Getting Zip File.............")
+
+V.Local.dFileDate.Set(V.Args.FileTime)
+F.Intrinsic.Date.DateAdd(D,-1,V.Ambient.Date,V.Local.dPrior)
+F.Intrinsic.Control.If(V.Local.dPrior.PervasiveDate,=,V.Local.dFileDate.PervasiveDate)
+	F.Intrinsic.Control.If(V.Local.sFile.Right3,=,"ZIP")
+		'downloading files to new dir to read contents of those files.
+		f.Intrinsic.String.Build("{0}\{1}",v.Global.sFolderDir,v.Args.Filename,v.Local.sTemp)
+		f.Communication.SFTP.SetProperty("RemoteFile",v.Args.filename)
+		f.Communication.SFTP.SetProperty("LocalFile",v.Local.sTemp)
+		f.Communication.SFTP.SetProperty("TransferMode",2)
+		f.Communication.SFTP.SetProperty("Overwrite", true)
+		f.Communication.SFTP.Download
+		
+		F.Intrinsic.Control.CallSub(Unzip,"Files",v.Local.sTemp)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Listdir_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Order_Upload.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Listdir.End
+
+Program.Sub.FormOrdUpload_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("FormOrdUpload_UnLoad_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+Gui.FormOrdUpload..Visible(False)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("FormOrdUpload_UnLoad_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Order_Upload.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.FormOrdUpload_UnLoad.End
+
+Program.Sub.SO_Hdr.Start
+F.Intrinsic.Control.SetErrorHandler("SO_Hdr_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+
+F.Data.DataTable.AddRow("ORDUPL","Transaction","O","CustomerNO",V.Global.sCustomer,"OrderDueDate",V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).DueDate!FieldValTrim,"OrderDate",V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Order_Date!FieldValTrim,"CustomerPO",V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).PONUM!FieldValTrim,"SHIPToName","","ShipToAddress1","","ShipToCity","","ShipToState","","ShipToZip","")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("SO_Hdr_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Order_Upload.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.SO_Hdr.End
+
+Program.Sub.SO_Lines.Start
+F.Intrinsic.Control.SetErrorHandler("SO_Lines_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sQty.Declare(String,"")
+V.Local.sCost.Declare(String,"")
+V.Local.sPL.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+V.Local.sDesc.Declare(String,"")
+V.Local.sUM.Declare(String,"")
+
+F.Intrinsic.Math.Mult(V.DataView.OrderUp!VOrderUp.RowCount,10000,V.Local.sQty.Long)
+F.Intrinsic.Math.Mult(V.Args.Cost,1000000,V.Local.sCost.Long)
+F.Intrinsic.String.LPad(V.Local.sQty,"0",13,V.Local.sQty)
+F.Intrinsic.String.LPad(V.Local.sCost,"0",13,V.Local.sCost)
+
+F.Intrinsic.String.Build("Select Top 1 Product_Line From V_Inventory_Mstr Where Part = '{0}'",V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Part!FieldValTrim,V.Local.sSql)
+F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSql,V.Local.sPL)
+
+F.Intrinsic.String.Build("Select Top 1 Description From V_Inventory_Mstr Where Part = '{0}'",V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Part!FieldValTrim,V.Local.sSql)
+F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSql,V.Local.sDesc)
+
+F.Intrinsic.String.Build("Select Top 1 UM_Inventory From V_Inventory_Mstr Where Part = '{0}'",V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Part!FieldValTrim,V.Local.sSql)
+F.ODBC.Connection!con.ExecuteAndReturn(V.Local.sSql,V.Local.sUM)
+
+F.Data.DataTable.AddRow("ORDUPLLines","QtyOrdered",V.Local.sQty,"UM",V.Local.sUM,"PartNumber",V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Part!FieldValTrim,"PartLoc","","QuotedPrice",V.Local.sCost,"PartDesc",V.Local.sDesc,"LineOrderDate",V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Order_Date!FieldValTrim,"PL",V.Local.sPL.Trim,"UserField1","","Router",V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).Part!FieldValTrim,"LinePromiseDate",V.DataView.OrderUp!VOrderUp(V.DataView.OrderUp!VOrderUp.RowCount--).DUEDATE!FieldValTrim,"LineType","S")
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("SO_Lines_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Order_Upload.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.SO_Lines.End
+
+Program.Sub.Unzip.Start
+F.Intrinsic.Control.SetErrorHandler("SO_Lines_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sFiles.Declare(String,"")
+V.Local.sZip.Declare(String,"")
+V.Local.sTemp.Declare(String,"")
+V.Local.i.Declare(Long,0)
+
+F.Intrinsic.String.Split(V.Args.Files,"\",V.Local.sZip)
+
+F.Intrinsic.UI.ChangeWaitStatus("Unzipping Files..................")
+
+F.Automation.Zip.UnZip(V.Args.Files,V.Global.sFolderDir)
+
+V.Global.sFolderDir.Set("C:\Apps\Global\Custom\6211\Proc_Files\")
+F.Intrinsic.File.GetFileList(V.Global.sFolderDir,V.Local.sFiles)
+
+F.Intrinsic.String.Split(V.Local.sFiles,":",V.Local.sTemp)
+
+V.Local.sFiles.Set("")
+
+F.Intrinsic.Control.For(V.Local.i,0,V.Local.sTemp.UBound,1)
+	F.Intrinsic.Control.If(V.Local.sTemp(V.Local.i),<>,V.Local.sZip(V.Local.sZip.UBound))
+		F.Intrinsic.Control.If(V.Local.sFiles.Trim,=,"")
+			F.Intrinsic.String.Build("{0}{1}",V.Global.sFolderDir,V.Local.sTemp(V.Local.i),V.Local.sFiles)
+		F.Intrinsic.Control.Else
+			F.Intrinsic.String.Build("{2}*!*{0}{1}",V.Global.sFolderDir,V.Local.sTemp(V.Local.i),V.Local.sFiles,V.Local.sFiles)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Next(V.Local.i)
+
+F.Intrinsic.File.DeleteFile(V.Args.Files)
+
+F.Intrinsic.Control.CallSub(Process_Files,"Files",V.Local.sFiles)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("SO_Lines_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Order_Upload.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Unzip.End
+
+Program.Sub.CreateWO.Start
+F.Intrinsic.Control.SetErrorHandler("CreateWO_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String,"")
+V.Local.sWO.Declare(String,"")
+V.Local.sRet.Declare(String,"")
+V.Local.sFile.Declare(String,"")
+V.Local.sDate.Declare(String,"")
+V.Local.sLocal.Declare(String,"")
+V.Local.sWOFile.Declare(String,"")
+V.Local.sSql.Declare(String,"")
+
+V.Local.sWOFile.Set(V.Args.WOFILE)
+
+F.Intrinsic.String.Format(V.Ambient.Now,"YYMMDD-HHMMSS",V.Local.sDate)
+F.Intrinsic.Control.If(V.Caller.LocalGSSTempDir.Right1,=,"\")
+	V.Local.sLocal.Set(V.Caller.LocalGSSTempDir)
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Build("{0}\",V.Caller.LocalGSSTempDir,V.Local.sLocal)
+F.Intrinsic.Control.EndIf
+F.Intrinsic.String.Build("{0}WO_6211-{1}.txt",V.Local.sLocal,V.Local.sDate,V.Local.sFile)
+
+F.Intrinsic.File.String2File(V.Local.sFile,V.Local.sWOFile)
+	
+F.Global.Callwrapper.New("GenFG","Manufacturing.CreateWorkOrderFinishedGoodPart")
+F.Global.Callwrapper.SetProperty("GenFG","FileName",V.Local.sFile)
+F.Global.CallWrapper.Run("GenFG")
+F.Global.CallWrapper.GetProperty("GenFG","ReturnCode",V.Local.sRet)
+		
+F.Intrinsic.String.Build("Select Top 1 Job, Suffix From V_Order_To_WO Where Order_No = '{0}' and Order_Line = '{1}'",V.Args.Order,V.Args.Record_No,V.Local.sSql)
+F.ODBC.Connection!Con.ExecuteAndReturn(V.Local.sSql,V.Local.sWO)
+F.Intrinsic.String.Split(V.Local.sWO,"*!*",V.Local.sWO)
+V.Local.sWO.RedimPreserve(0,1)
+
+F.Intrinsic.Variable.AddRV("Job",V.Local.sWO(0).Trim,"Suffix",V.Local.sWO(1).Trim)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("CreateWO_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	F.Intrinsic.String.Build("Project: GCG_6211_Order_Upload.g2u {0}{0}Subroutine: {1}{0}Error Occurred {2} with description {3}",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Exit)
+Function.Intrinsic.Control.EndIf
+Program.Sub.CreateWO.End
